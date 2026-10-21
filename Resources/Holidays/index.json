@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "region": "CN",
+  "years": [
+    {
+      "year": 2026,
+      "revision": 1,
+      "file": "2026.v1.json",
+      "sha256": "1762ed0a97ca0d717400b590b0ae2f1e8c89cf773025ba533f61a66fb8a945e2"
+    }
+  ]
+}

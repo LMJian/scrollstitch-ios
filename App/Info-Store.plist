@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>zh_CN</string>
+	<key>ScrollStitchAppGroup</key>
+	<string>$(SCROLLSTITCH_APP_GROUP)</string>
+	<key>M0BuildRevision</key>
+	<string>$(SCROLLSTITCH_BUILD_REVISION)</string>
+	<key>M0BuildConfiguration</key>
+	<string>$(CONFIGURATION)</string>
+	<key>ScrollStitchSourceDigest</key>
+	<string>$(SCROLLSTITCH_SOURCE_DIGEST)</string>
+	<key>ScrollStitchEdition</key>
+	<string>$(SCROLLSTITCH_EDITION)</string>
+	<key>CFBundleDisplayName</key>
+	<string>卷轴</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>用于将你生成的长图或拼图保存到相册</string>
+	<key>UILaunchScreen</key>
+	<dict/>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+	</array>
+</dict>
+</plist>

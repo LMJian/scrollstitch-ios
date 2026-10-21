@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>zh_CN</string>
+	<key>ScrollStitchAppGroup</key>
+	<string>$(SCROLLSTITCH_APP_GROUP)</string>
+	<key>M0BuildRevision</key>
+	<string>$(SCROLLSTITCH_BUILD_REVISION)</string>
+	<key>M0BuildConfiguration</key>
+	<string>$(CONFIGURATION)</string>
+	<key>ScrollStitchSourceDigest</key>
+	<string>$(SCROLLSTITCH_SOURCE_DIGEST)</string>
+	<key>ScrollStitchEdition</key>
+	<string>$(SCROLLSTITCH_EDITION)</string>
+	<key>CFBundleDisplayName</key>
+	<string>卷轴</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>用于将你生成的长图或拼图保存到相册</string>
+	<key>UILaunchScreen</key>
+	<dict/>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+	</array>
+	<key>NSScreenCaptureUsageDescription</key>
+	<string>用于录制你选择共享的屏幕，在本机生成滚动长截图</string>
+	<key>NSAlarmKitUsageDescription</key>
+	<string>用于按你的工作日和调休安排设置起床闹钟，静音和专注模式下也能提醒</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>screen-capture</string>
+		<string>processing</string>
+		<string>fetch</string>
+	</array>
+	<key>NSSupportsLiveActivities</key>
+	<true/>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>$(PRODUCT_BUNDLE_IDENTIFIER).finish-scroll</string>
+		<string>$(PRODUCT_BUNDLE_IDENTIFIER).refresh-alarms</string>
+	</array>
+</dict>
+</plist>

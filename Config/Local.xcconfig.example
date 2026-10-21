@@ -1,0 +1,4 @@
+// Copy to Local.xcconfig only when the account owner supplies registered identifiers.
+DEVELOPMENT_TEAM = YOUR_TEAM_ID
+SCROLLSTITCH_BUNDLE_PREFIX = com.yourteam.scrollstitch
+SCROLLSTITCH_APP_GROUP = group.com.yourteam.scrollstitch

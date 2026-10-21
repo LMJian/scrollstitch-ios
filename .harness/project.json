@@ -1,0 +1,126 @@
+{
+  "schema_version": 2,
+  "base_ref": "main",
+  "max_attempts": 3,
+  "parallel_max": 1,
+  "check_timeout_seconds": 900,
+  "review_max_age_seconds": 7200,
+  "checks": {
+    "unit": {
+      "argv": [
+        "bash",
+        "scripts/check.sh",
+        "unit"
+      ]
+    },
+    "config": {
+      "argv": [
+        "bash",
+        "scripts/check.sh",
+        "config"
+      ]
+    },
+    "alarm-data": {
+      "argv": [
+        "python3",
+        "scripts/check_alarm_data.py"
+      ]
+    },
+    "app-icon": {
+      "argv": [
+        "swift",
+        "scripts/generate_icon.swift",
+        "--check"
+      ]
+    },
+    "device-build": {
+      "argv": [
+        "bash",
+        "scripts/check.sh",
+        "device-build"
+      ]
+    },
+    "store-probe": {
+      "argv": [
+        "python3",
+        "scripts/check_store_mode.py"
+      ]
+    },
+    "store-archive": {
+      "argv": [
+        "bash",
+        "scripts/check.sh",
+        "store-archive"
+      ]
+    },
+    "release-package": {
+      "argv": [
+        "python3",
+        "scripts/check_release.py",
+        "--mode",
+        "local",
+        "--app",
+        ".build/StoreArchive.xcarchive/Products/Applications/ScrollStitchStore.app"
+      ]
+    },
+    "public-tree": {
+      "argv": [
+        "python3",
+        "scripts/check_public_tree.py"
+      ]
+    }
+  },
+  "stage_checks": {
+    "review": [
+      "public-tree",
+      "unit",
+      "config",
+      "alarm-data",
+      "app-icon",
+      "device-build",
+      "store-probe",
+      "store-archive",
+      "release-package"
+    ]
+  },
+  "adapters": {
+    "push": {
+      "argv": [
+        "python3",
+        "{plugin_root}/adapters/git_push.py",
+        "--remote",
+        "origin"
+      ],
+      "effect": "external",
+      "timeout_seconds": 240
+    }
+  },
+  "workflow": {
+    "profile": "light",
+    "target": "local",
+    "isolation": "checkout",
+    "assistance": "autonomous",
+    "entry": "review",
+    "integration_position": "before_push",
+    "knowledge_approval": false,
+    "stages": {
+      "design_approval": false,
+      "integration": false
+    },
+    "domain": "mixed",
+    "capabilities": {
+      "recon": "auto",
+      "design": "auto",
+      "design_audit": "auto",
+      "review": "auto"
+    }
+  },
+  "host": {
+    "name": "codex",
+    "available": [],
+    "command": {
+      "provider": "auto"
+    },
+    "worktree": "auto"
+  }
+}

@@ -1,0 +1,15 @@
+IPHONEOS_DEPLOYMENT_TARGET = 27.0
+SWIFT_VERSION = 6.0
+TARGETED_DEVICE_FAMILY = 1
+MARKETING_VERSION = 0.1.0
+CURRENT_PROJECT_VERSION = 4
+PRODUCT_BUNDLE_IDENTIFIER = local.scrollstitch.app
+SCROLLSTITCH_BUNDLE_PREFIX = local.scrollstitch
+SCROLLSTITCH_APP_GROUP = group.local.scrollstitch
+SCROLLSTITCH_BUILD_REVISION = unbound
+SCROLLSTITCH_SOURCE_DIGEST = unbound
+CODE_SIGN_STYLE = Automatic
+#include? "Local.xcconfig"
+
+// Default developer edition; the independent collage target overrides this.
+SCROLLSTITCH_EDITION = developer

@@ -1,0 +1,209 @@
+{
+  "schemaVersion": 1,
+  "region": "CN",
+  "year": 2026,
+  "revision": 1,
+  "timeZone": "Asia/Shanghai",
+  "source": {
+    "title": "国务院办公厅关于2026年部分节假日安排的通知",
+    "url": "https://www.gov.cn/zhengce/content/202511/content_7047090.htm",
+    "publishedAt": "2025-11-04"
+  },
+  "overrides": [
+    {
+      "date": "2026-01-01",
+      "kind": "rest",
+      "name": "元旦"
+    },
+    {
+      "date": "2026-01-02",
+      "kind": "rest",
+      "name": "元旦"
+    },
+    {
+      "date": "2026-01-03",
+      "kind": "rest",
+      "name": "元旦"
+    },
+    {
+      "date": "2026-01-04",
+      "kind": "work",
+      "name": "元旦补班"
+    },
+    {
+      "date": "2026-02-14",
+      "kind": "work",
+      "name": "春节补班"
+    },
+    {
+      "date": "2026-02-15",
+      "kind": "rest",
+      "name": "春节"
+    },
+    {
+      "date": "2026-02-16",
+      "kind": "rest",
+      "name": "春节"
+    },
+    {
+      "date": "2026-02-17",
+      "kind": "rest",
+      "name": "春节"
+    },
+    {
+      "date": "2026-02-18",
+      "kind": "rest",
+      "name": "春节"
+    },
+    {
+      "date": "2026-02-19",
+      "kind": "rest",
+      "name": "春节"
+    },
+    {
+      "date": "2026-02-20",
+      "kind": "rest",
+      "name": "春节"
+    },
+    {
+      "date": "2026-02-21",
+      "kind": "rest",
+      "name": "春节"
+    },
+    {
+      "date": "2026-02-22",
+      "kind": "rest",
+      "name": "春节"
+    },
+    {
+      "date": "2026-02-23",
+      "kind": "rest",
+      "name": "春节"
+    },
+    {
+      "date": "2026-02-28",
+      "kind": "work",
+      "name": "春节补班"
+    },
+    {
+      "date": "2026-04-04",
+      "kind": "rest",
+      "name": "清明节"
+    },
+    {
+      "date": "2026-04-05",
+      "kind": "rest",
+      "name": "清明节"
+    },
+    {
+      "date": "2026-04-06",
+      "kind": "rest",
+      "name": "清明节"
+    },
+    {
+      "date": "2026-05-01",
+      "kind": "rest",
+      "name": "劳动节"
+    },
+    {
+      "date": "2026-05-02",
+      "kind": "rest",
+      "name": "劳动节"
+    },
+    {
+      "date": "2026-05-03",
+      "kind": "rest",
+      "name": "劳动节"
+    },
+    {
+      "date": "2026-05-04",
+      "kind": "rest",
+      "name": "劳动节"
+    },
+    {
+      "date": "2026-05-05",
+      "kind": "rest",
+      "name": "劳动节"
+    },
+    {
+      "date": "2026-05-09",
+      "kind": "work",
+      "name": "劳动节补班"
+    },
+    {
+      "date": "2026-06-19",
+      "kind": "rest",
+      "name": "端午节"
+    },
+    {
+      "date": "2026-06-20",
+      "kind": "rest",
+      "name": "端午节"
+    },
+    {
+      "date": "2026-06-21",
+      "kind": "rest",
+      "name": "端午节"
+    },
+    {
+      "date": "2026-09-20",
+      "kind": "work",
+      "name": "国庆节补班"
+    },
+    {
+      "date": "2026-09-25",
+      "kind": "rest",
+      "name": "中秋节"
+    },
+    {
+      "date": "2026-09-26",
+      "kind": "rest",
+      "name": "中秋节"
+    },
+    {
+      "date": "2026-09-27",
+      "kind": "rest",
+      "name": "中秋节"
+    },
+    {
+      "date": "2026-10-01",
+      "kind": "rest",
+      "name": "国庆节"
+    },
+    {
+      "date": "2026-10-02",
+      "kind": "rest",
+      "name": "国庆节"
+    },
+    {
+      "date": "2026-10-03",
+      "kind": "rest",
+      "name": "国庆节"
+    },
+    {
+      "date": "2026-10-04",
+      "kind": "rest",
+      "name": "国庆节"
+    },
+    {
+      "date": "2026-10-05",
+      "kind": "rest",
+      "name": "国庆节"
+    },
+    {
+      "date": "2026-10-06",
+      "kind": "rest",
+      "name": "国庆节"
+    },
+    {
+      "date": "2026-10-07",
+      "kind": "rest",
+      "name": "国庆节"
+    },
+    {
+      "date": "2026-10-10",
+      "kind": "work",
+      "name": "国庆节补班"
+    }
+  ]
+}
