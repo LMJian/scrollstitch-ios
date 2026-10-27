@@ -11,9 +11,9 @@
 | 隐私问卷答案 | [privacy-answers.md](privacy-answers.md) | 已核对源码与托管政策；给出逐项答案及最终接入商需复核的日志边界 |
 | 北京备案准备 | [filing-preparation.md](filing-preparation.md) | 个人主体、当前域名缺口、可直接使用的服务说明和静态文件迁移顺序 |
 | 验收 | [acceptance.md](acceptance.md) | 区分本地验证、模拟器和真机结果 |
-| 本轮真机记录 | [device-acceptance-2026-10-27.md](device-acceptance-2026-10-27.md) | 记录已观察结果、发现的问题及用户暂停后的剩余验收/清理项 |
+| 本轮真机记录 | [device-acceptance-2026-10-27.md](device-acceptance-2026-10-27.md) | 记录修复版本的实际成品、响铃结果与剩余验收项 |
 | 网站页面 | [介绍](https://lmjian.github.io/apps/scrollstitch/)、[支持](https://lmjian.github.io/apps/scrollstitch/support.html)、[隐私](https://lmjian.github.io/apps/scrollstitch/privacy.html) | 已部署并验证，无 JS、分析或外部字体；源文件保存在 site/ |
-| 截图交付 | [screenshots.md](screenshots.md) | 已整理 10 张真实截图（6 张模拟器、4 张真机），均为自有素材；最新代码修复仍待真机复测 |
+| 截图交付 | [screenshots.md](screenshots.md) | 已整理 10 张真实截图（6 张模拟器、4 张真机），均为自有素材；另记录最新修复的真机验证结果 |
 | 剩余状态 | [release-status.json](release-status.json) | 未完成事项保持 pending，不使用虚构的备案号/审核回执 |
 
 ## 本地检查与正式候选包

@@ -10,7 +10,7 @@
     ],
     "supportEmail": "limingjian.yy@gmail.com",
     "copyright": "2026 李明健",
-    "gui": "physical-device work paused by user; Mac-only work continues"
+    "gui": "authorized device acceptance concluded; cleanup verified except VPN reconnection, handed back to user"
   },
   "pending": [
     {
@@ -30,13 +30,13 @@
     },
     {
       "id": "device-acceptance",
-      "status": "paused_by_user",
-      "reason": "已完成备份、升级一致性核验及纵向自动生成保存；发现预览读取竞争和系统面板混入横向匹配问题。修复在 Mac 验证，未重新安装；用户取回手机，后续验收暂停。"
+      "status": "partially_verified",
+      "reason": "修复版本 85bf7ee 已安装并通过横向往返、暂停换页、自动保存回调和即时预览；在线后台及断网、静音、勿扰闹钟均由用户确认实际铃声。相册 App 独立读回与手机蜂窝直连更新/网页未完成，本轮不再扩展测试。"
     },
     {
       "id": "device-cleanup",
-      "status": "waiting_for_device",
-      "reason": "测试已停止且未创建测试闹钟；设备断开后自动恢复网络未能执行，已告知用户重连 Wi-Fi/VPN。临时验收 App、测试驱动和新增的控制中心控件待清理。"
+      "status": "vpn_requires_manual_restore",
+      "reason": "两个测试闹钟、临时 App/驱动和新增控件均已清理；原有 09:00 规则、47 个排程及 11 份作品保留。Wi-Fi、飞行模式、勿扰和截图方向已恢复；VPN 仍关闭，已通知用户手动开启。"
     }
   ],
   "completed": [
@@ -76,6 +76,12 @@
       "id": "retained-capture-replay",
       "status": "verified_locally",
       "verification": "两份原始录制共 166 个输入文件大小/SHA-256 一致；纵向 1206×9686、横向 4976×2436 完整重放并检查编号、起止像素和固定栏。仅 Mac 重放，未操作手机或写入 Photos。"
+    },
+    {
+      "id": "current-device-core-paths",
+      "status": "verified",
+      "commit": "85bf7eea3bf5b32596d8bcd0ddef0c7749c79817",
+      "verification": "横向 4976×2436、两页衔接 1206×8527，实际成品检查与保存后即时预览通过。13:10 在线和 13:14 断网/勿扰系统提醒均出现，用户分别确认铃声；原有静音状态保持，测试闹钟已删除。"
     }
   ]
 }
