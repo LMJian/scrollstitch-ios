@@ -21,4 +21,14 @@ final class ProductInformationTests: XCTestCase {
         }
         XCTAssertEqual(ProductInformation.safeHTTPS("https://www.apple.com/legal/privacy/")?.host, "www.apple.com")
     }
+    func testOfflineEmailSupportRejectsInjectedActions() throws {
+        for email in ["limingjian.yy@gmail.com", "a@b.com?bcc=other@host.com", "a@b.com\nBcc:other@host.com", "a@b.com\n", "a@b.com\r\n", "javascript:alert(1)"] {
+            let object: [String: Any] = ["schemaVersion":1, "policyVersion":"2026-10-27", "effectiveDate":"2026-10-27",
+                "sections":[["title":"支持", "body":"邮件支持"]], "supportEmail":email]
+            let info = try ProductInformation.decode(JSONSerialization.data(withJSONObject: object))
+            if email == "limingjian.yy@gmail.com" {
+                XCTAssertEqual(info.supportEmailLink?.absoluteString, "mailto:" + email)
+            } else { XCTAssertNil(info.supportEmailLink) }
+        }
+    }
 }

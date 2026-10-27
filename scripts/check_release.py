@@ -85,27 +85,28 @@ def resource_check(root=ROOT):
             require(all('SCROLLSTITCH_CONTROLS' in v.get('SWIFT_ACTIVE_COMPILATION_CONDITIONS', '').split()
                         and v.get('APPLICATION_EXTENSION_API_ONLY') == 'YES' for v in modes.values()),
                     'controls capability configuration drift')
+            require(modes['Store'].get('SCROLLSTITCH_EDITION') == 'appStore', 'Store controls edition mismatch')
+            require(modes['Store'].get('MARKETING_VERSION') == '1.0.0' and modes['Store'].get('CURRENT_PROJECT_VERSION') == '1', 'Store controls version mismatch')
             continue
         require('SCROLLSTITCH_STORE' in modes['Store'].get('SWIFT_ACTIVE_COMPILATION_CONDITIONS', '').split(), 'Store compiler gate missing')
         require(modes['Store']['SWIFT_OPTIMIZATION_LEVEL'] == '-O', 'Store must use Release optimization')
         if is_store:
-            require(not target['dependencies'], 'collage target depends on capture extension')
-            require(not any(project[p]['isa'] == 'PBXCopyFilesBuildPhase' for p in target['buildPhases']), 'collage target embeds extra products')
             for settings in modes.values():
                 flags = settings.get('SWIFT_ACTIVE_COMPILATION_CONDITIONS', '').split()
-                require('SCROLLSTITCH_STORE' in flags and 'SCROLLSTITCH_COLLAGE_ONLY' in flags, 'collage gate missing from target configuration')
-                require(settings.get('SCROLLSTITCH_EDITION') == 'collageOnly', 'collage edition metadata missing')
+                require('SCROLLSTITCH_STORE' in flags and 'SCROLLSTITCH_COLLAGE_ONLY' not in flags, 'full Store capability gate drift')
+                require(settings.get('SCROLLSTITCH_EDITION') == 'appStore', 'Store edition metadata missing')
                 require(settings.get('MARKETING_VERSION') == '1.0.0' and settings.get('CURRENT_PROJECT_VERSION') == '1', 'local candidate version drift')
+            require(set(p.relative_to(root).as_posix() for p in (root/'Resources/Holidays').glob('*.json')).issubset(refs), 'Store annual data missing')
         else:
             require(all('SCROLLSTITCH_STORE' not in modes[m].get('SWIFT_ACTIVE_COMPILATION_CONDITIONS', '') for m in ('Debug', 'Release')), 'local build modes unexpectedly changed')
             require(all('SCROLLSTITCH_COLLAGE_ONLY' not in v.get('SWIFT_ACTIVE_COMPILATION_CONDITIONS', '') for v in modes.values()), 'developer capture capability changed')
-            require(len(target['dependencies']) == 1 and
-                    project[project[target['dependencies'][0]]['target']]['name'] == 'ScrollControls',
-                    'developer app must depend only on its control extension')
-            copies = [project[p] for p in target['buildPhases'] if project[p]['isa'] == 'PBXCopyFilesBuildPhase']
-            require(len(copies) == 1 and len(copies[0]['files']) == 1 and
-                    project[project[copies[0]['files'][0]]['fileRef']]['path'] == 'ScrollControls.appex',
-                    'developer app must embed only its control extension')
+        require(len(target['dependencies']) == 1 and
+                project[project[target['dependencies'][0]]['target']]['name'] == 'ScrollControls',
+                'full app must depend only on its control extension')
+        copies = [project[p] for p in target['buildPhases'] if project[p]['isa'] == 'PBXCopyFilesBuildPhase']
+        require(len(copies) == 1 and len(copies[0]['files']) == 1 and
+                project[project[copies[0]['files'][0]]['fileRef']]['path'] == 'ScrollControls.appex',
+                'full app must embed only its control extension')
     subprocess.run([sys.executable, str(root / 'scripts/generate_project.py'), '--check'], check=True, stdout=subprocess.PIPE)
     return {'privacy_targets': sorted(expected), 'original_icon': 'opaque 1024x1024 RGB', 'project': 'generated resources current'}
 
@@ -142,16 +143,17 @@ def product_check(product):
         require(product.get(key) is None or public_https(product[key]), 'unsafe or placeholder ' + key)
 
 
-def collage_bundle_check(app, info):
-    """Require edition identity and absent extension, independent of the bundle filename."""
-    require(info.get('ScrollStitchEdition') == 'collageOnly', 'not a collage-only candidate')
+def store_bundle_check(app, info):
+    """Require the full release edition, independent of the bundle filename."""
+    require(info.get('ScrollStitchEdition') == 'appStore', 'not an App Store candidate')
     require(info.get('CFBundleDisplayName') == '卷轴', 'unexpected App name')
-    require(not list(Path(app).rglob('*.appex')), 'collage candidate contains an extension')
+    require(len(list(Path(app).rglob('*.appex'))) == 1, 'Store candidate must contain exactly one control extension')
     require('NSExtension' not in info, 'App declares an extension entry')
-    require('NSScreenCaptureUsageDescription' not in info, 'collage candidate requests screen capture')
-    require('NSAlarmKitUsageDescription' not in info, 'collage candidate requests alarms')
-    require(not list(Path(app).glob('*.v*.json')), 'collage candidate contains annual alarm data')
-    require('UIBackgroundModes' not in info, 'collage candidate declares background capture')
+    require(info.get('NSScreenCaptureUsageDescription'), 'Store capture permission missing')
+    require(info.get('NSAlarmKitUsageDescription'), 'Store alarm permission missing')
+    require(list(Path(app).glob('*.v*.json')), 'Store annual alarm data missing')
+    require(info.get('UIBackgroundModes') == ['screen-capture','processing','fetch'], 'Store background modes mismatch')
+    require(info.get('ITSAppUsesNonExemptEncryption') is False, 'export compliance declaration missing')
     require(info.get('CFBundleShortVersionString') == '1.0.0' and info.get('CFBundleVersion') == '1', 'local candidate version drift')
 
 
@@ -160,7 +162,9 @@ def local_check(app, root=ROOT):
     app = Path(app).resolve()
     require(app.is_dir() and app.suffix == '.app', 'actual .app bundle required')
     app_info = read_plist(app / 'Info.plist')
-    collage_bundle_check(app, app_info)
+    store_bundle_check(app, app_info)
+    from check_native_package import check as native_check
+    native_check(app, edition='appStore')
     revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True).strip()
     digest = source_digest(root)
     require(app_info.get('M0BuildConfiguration') == 'Store', 'not Store configuration')
@@ -186,9 +190,7 @@ def local_check(app, root=ROOT):
     forbidden = {'.artifacts', 'Documents', 'operator-fixtures', 'frames', '.harness', 'Local.xcconfig'}
     require(not any(forbidden.intersection(p.relative_to(app).parts) for p in app.rglob('*')), 'private/operator files included in bundle')
     executable = app / app_info['CFBundleExecutable']
-    linked = subprocess.check_output(['xcrun', 'otool', '-L', str(executable)], text=True)
-    require('AlarmKit.framework/AlarmKit' not in linked, 'collage candidate links AlarmKit')
-    return {**result, 'build_revision': revision, 'source_digest': digest, 'configuration': 'Store', 'edition': 'collageOnly', 'extensions': 0,
+    return {**result, 'build_revision': revision, 'source_digest': digest, 'configuration': 'Store', 'edition': 'appStore', 'extensions': 1,
             'version': app_info['CFBundleShortVersionString'] + ' (' + app_info['CFBundleVersion'] + ')',
             'bundle_id': app_info['CFBundleIdentifier'], 'boundary': 'unsigned local archive structure; no distribution entitlement or UI/runtime claim'}
 
@@ -196,6 +198,7 @@ def local_check(app, root=ROOT):
 DECISIONS = ('product_scope', 'quality_evidence', 'distribution_account', 'signing', 'identity_name',
              'languages_regions_pricing', 'support_channel', 'store_copy', 'screenshots', 'icon_review',
              'age_rating', 'export_compliance', 'app_privacy', 'upload_approval')
+DECISIONS += ('mainland_filing', 'artwork_rights', 'runtime_acceptance')
 
 def distribution_blockers(product, decisions, revision, digest):
     """Validate declarations and evidence references, never claim external platform approval."""

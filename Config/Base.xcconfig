@@ -11,5 +11,5 @@ SCROLLSTITCH_SOURCE_DIGEST = unbound
 CODE_SIGN_STYLE = Automatic
 #include? "Local.xcconfig"
 
-// Default developer edition; the independent collage target overrides this.
+// Default developer edition; the App Store target disables operator tools.
 SCROLLSTITCH_EDITION = developer

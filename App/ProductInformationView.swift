@@ -14,10 +14,11 @@ struct ProductInformationView: View {
                 ForEach(Array(information.sections.enumerated()), id: \.offset) { _, section in
                     Section(section.title) { Text(section.body).fixedSize(horizontal: false, vertical: true) }
                 }
-                if information.supportLink != nil || information.privacyLink != nil {
+                if information.supportLink != nil || information.privacyLink != nil || information.supportEmailLink != nil {
                     Section("了解更多") {
                         if let url = information.supportLink { Link("联系与支持", destination: url) }
                         if let url = information.privacyLink { Link("在线隐私政策", destination: url) }
+                        if let url = information.supportEmailLink { Link("邮件联系开发者", destination: url) }
                     }
                 }
                 Section {

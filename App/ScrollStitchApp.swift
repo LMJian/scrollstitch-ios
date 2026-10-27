@@ -3,23 +3,19 @@ import SwiftUI
 @main struct ScrollStitchApp:App {
     @Environment(\.scenePhase) private var scenePhase
     @State private var fallbackTab = 0
-#if !SCROLLSTITCH_COLLAGE_ONLY && canImport(ScreenCaptureKit)
+#if canImport(ScreenCaptureKit)
     @UIApplicationDelegateAdaptor(ScrollAppDelegate.self) private var delegate
     @ObservedObject private var capture=ScrollCaptureCoordinator.shared
 #endif
     init() {
-#if !SCROLLSTITCH_COLLAGE_ONLY
         WorkdayAlarmBackground.register()
-#endif
-#if !SCROLLSTITCH_COLLAGE_ONLY && canImport(ScreenCaptureKit)
+#if canImport(ScreenCaptureKit)
         ScrollBackground.register()
 #endif
     }
     var body:some Scene {
         WindowGroup {
-#if SCROLLSTITCH_COLLAGE_ONLY
-            CollageWorkspaceView()
-#elseif canImport(ScreenCaptureKit)
+#if canImport(ScreenCaptureKit)
             TabView(selection:$capture.selectedTab) {
                 ScrollCaptureHome().tabItem {Label("滚动截图",systemImage:"viewfinder")}.tag(0)
                 CollageWorkspaceView().tabItem {Label("多图拼接",systemImage:"photo.on.rectangle.angled")}.tag(1)

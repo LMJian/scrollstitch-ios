@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "status": "prepared_not_submitted",
+  "edition": "appStore",
+  "version": "1.0.0",
+  "build": "1",
+  "displayName": "卷轴",
+  "subtitle": "滚动长截图、多图拼接与调休闹钟",
+  "primaryLanguage": "zh-Hans",
+  "primaryCategory": "UTILITIES",
+  "secondaryCategory": "PHOTO_AND_VIDEO",
+  "price": "free",
+  "territories": [
+    "CHN"
+  ],
+  "releaseMode": "manual",
+  "copyright": "2026 李明健",
+  "supportEmail": "limingjian.yy@gmail.com",
+  "requiresLogin": false,
+  "minimumIOS": "27.0",
+  "deviceFamilies": [
+    "iPhone"
+  ],
+  "keywords": "滚动截图,长图拼接,图片编辑,工作日闹钟,调休日历,离线工具",
+  "promotionalText": "滚过的内容，一张留下。多张图片自由拼接，法定工作日按安排提醒。图片在本机处理，已排程闹钟离线可用。",
+  "description": "卷轴，把滚动截图、多图拼接和调休闹钟放在一个轻巧的 iPhone 工具里。\n\n【滚动截图】\n从控制中心启动，确认 Apple 的屏幕共享提示后滚动内容。到达终点后点“完成”，卷轴在本机整理、去重并保存到照片。支持纵向、横向、同一方向轴内往返滚动，以及暂停后接下一页。只处理画面，不录制声音。受系统保护的内容不能保证被截取。\n\n【多图拼接】\n选择 2–20 张图片，调整顺序、裁剪、间距和背景。生成 PNG 或 JPEG，预览后保存到相册或使用系统分享。图片处理在本机完成。\n\n【调休闹钟】\n按中国法定工作日响铃：工作日照常提醒，法定休息日跳过，周末补班也纳入安排。还支持每天、自选星期和单日例外。年度安排随 App 内置，也可下载更新；网络不可用时使用已保存的有效数据。\n\n【使用须知】\n• 需要 iOS 27 或更新版本的 iPhone。屏幕共享、添加照片和系统闹钟分别需要相应授权。\n• 闹钟时间固定为北京时间（Asia/Shanghai），不会随旅行切换为当地时间。\n• 最多预排未来 90 天内最近 64 次。请查看实际覆盖日期，并在覆盖结束前打开 App 补齐；后台刷新不保证执行。\n• 缺少某年度安排时，不推测该年的法定工作日。当前随包包含 2026 年安排。\n• 请勿为 App 单独设置 Face ID／密码锁或隐藏 App，系统可能限制其闹钟。\n\n无需注册，无广告。图片、录屏与闹钟设置不上传给开发者。年度文件下载会产生托管服务的必要网络日志，详见隐私政策。",
+  "plannedURLs": {
+    "support": "https://lmjian.github.io/apps/scrollstitch/support.html",
+    "privacy": "https://lmjian.github.io/apps/scrollstitch/privacy.html",
+    "marketing": "https://lmjian.github.io/apps/scrollstitch/"
+  },
+  "publicURLStatus": "published_and_verified",
+  "appNameAvailability": "requires_app_store_connect",
+  "reviewContact": {
+    "name": "李明健",
+    "email": "limingjian.yy@gmail.com",
+    "phone": null
+  },
+  "ageRatingStatus": "questionnaire_prepared_apple_rating_pending",
+  "privacyLabelStatus": "answers_prepared_final_hosting_review_required",
+  "mainlandFilingStatus": "not_filed",
+  "iconRightsStatus": "commercial_use_confirmed_by_owner",
+  "reviewPhoneStatus": "provided_privately"
+}

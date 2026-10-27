@@ -600,6 +600,21 @@ public final class TaskStore: @unchecked Sendable {
     public func openResult(taskID: UUID, resultID: String) throws -> ResultAccess {
         try openResults(taskID:taskID,resultIDs:[resultID])[0]
     }
+    /// Thumbnail decoding and the full preview may start together. Wait only
+    /// for the existing exclusive owner; keep validation and Photos writes unchanged.
+    public func openResultForPreview(taskID: UUID, resultID: String,
+                                     wait: Duration = .seconds(2)) async throws -> ResultAccess {
+        let deadline = ContinuousClock.now.advanced(by: wait)
+        while true {
+            try Task.checkCancellation()
+            do { return try openResult(taskID: taskID, resultID: resultID) }
+            catch ScrollStitchError.resourceBusy {
+                let remaining = ContinuousClock.now.duration(to: deadline)
+                guard remaining > .zero else { throw ScrollStitchError.resourceBusy }
+                try await Task.sleep(for: min(.milliseconds(25), remaining))
+            }
+        }
+    }
     public func openResults(taskID:UUID,resultIDs:[String]) throws -> [ResultAccess] {
         guard !resultIDs.isEmpty,resultIDs.count<=512,Set(resultIDs).count==resultIDs.count else { throw ResultExportError.invalidResult }
         let lease=try acquireShareLease(taskID:taskID)

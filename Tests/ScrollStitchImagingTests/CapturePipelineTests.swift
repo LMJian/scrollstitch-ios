@@ -158,6 +158,40 @@ final class CapturePipelineTests: XCTestCase {
         XCTAssertEqual(set.status,.noUsableContent);XCTAssertTrue(set.pages.isEmpty)
         XCTAssertEqual(try value.0.captureSnapshot(taskID:value.1,verifyFiles:true).frames.count,3)
     }
+    func testHorizontalTallFixedHeaderIsRenderedOnlyOnce() async throws {
+        let w=390,h=844,shift=120,header=340,footer=180
+        let store=try storage()
+        let taskID:UUID=try {
+            let pair=try store.beginCapture()
+            let archive=try ScrollFrameArchive(store:store,taskID:pair.0.taskID,owner:pair.1,
+                options:ScrollCaptureOptions(axis:.horizontal,keepsStatusBar:true),topCropRatio:0.075)
+            for (i,offset) in [0,shift,0,shift].enumerated() {
+                var bytes=[UInt8]();bytes.reserveCapacity(w*h*4)
+                for y in 0..<h {for x in 0..<w {
+                    bytes += y<header || y>=h-footer ? [40,70,150,255] : pixel(y,x+offset)
+                }}
+                let provider=try XCTUnwrap(CGDataProvider(data:Data(bytes) as CFData))
+                let cg=try XCTUnwrap(CGImage(width:w,height:h,bitsPerComponent:8,bitsPerPixel:32,
+                    bytesPerRow:w*4,space:CGColorSpaceCreateDeviceRGB(),
+                    bitmapInfo:CGBitmapInfo(rawValue:CGImageAlphaInfo.last.rawValue),provider:provider,
+                    decode:nil,shouldInterpolate:false,intent:.defaultIntent))
+                _=try archive.append(jpeg:jpeg(cg),size:PixelSize(width:w,height:h),pts:Double(i))
+            }
+            try archive.finish(complete:true);return pair.0.taskID
+        }()
+        let result=try await run((store,taskID))
+        XCTAssertEqual(result.status,.complete)
+        let raster=try FrameRaster(image:output(result,store:store))
+        XCTAssertEqual(raster.size.width,w+shift)
+        XCTAssertEqual(raster.size.height,h)
+        func rgb(_ x:Int,_ y:Int)->[UInt8] {
+            let index=(y*raster.size.width+x)*4;return Array(raster.rgba[index..<(index+3)])
+        }
+        XCTAssertLessThan(rgb(100,300)[0],60) // authentic fixed header remains
+        XCTAssertTrue(rgb(w+40,300).allSatisfy{$0>245}) // no repeated header strip
+        XCTAssertTrue(rgb(w+40,h-100).allSatisfy{$0>245}) // footer also appears once
+        XCTAssertFalse(rgb(w+40,450).allSatisfy{$0>245}) // moving content is retained
+    }
     func testInterruptedInputCannotBecomeACompleteResult() async throws {
         let value=try record([[0,160,320]],complete:false)
         let set=try await run(value)

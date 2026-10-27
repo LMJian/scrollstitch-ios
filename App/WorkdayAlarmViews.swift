@@ -1,4 +1,3 @@
-#if !SCROLLSTITCH_COLLAGE_ONLY
 import SwiftUI
 
 private enum AlarmText {
@@ -384,4 +383,3 @@ private struct WorkdayCalendarDataView: View {
         }.navigationTitle("年度安排").navigationBarTitleDisplayMode(.inline).tint(.orange)
     }
 }
-#endif

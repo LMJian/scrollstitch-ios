@@ -37,7 +37,7 @@ struct PreparedFrame: Codable {
 enum FramePreparationCache {
     // Sampling geometry and system-panel classification are part of the
     // derived payload. Never reuse analysis produced by the older matcher.
-    static let version = 2
+    static let version = 3
 
     static func cacheURL(for frame: URL) -> URL {
         frame.deletingLastPathComponent().appendingPathComponent("Analysis-v1", isDirectory: true)

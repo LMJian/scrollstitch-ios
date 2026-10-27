@@ -19,7 +19,7 @@ struct ToggleScrollIntent: LiveActivityIntent {
     static var supportedModes: IntentModes { .background }
     static var allowedExecutionTargets: IntentExecutionTargets { .main }
     func perform() async throws -> some IntentResult {
-        #if !SCROLLSTITCH_CONTROLS && !SCROLLSTITCH_COLLAGE_ONLY && canImport(ScreenCaptureKit)
+        #if !SCROLLSTITCH_CONTROLS && canImport(ScreenCaptureKit)
         await ScrollCaptureCoordinator.shared.toggle()
         #else
         throw ScrollControlError.mainAppRequired
@@ -33,7 +33,7 @@ struct NextScrollPageIntent: LiveActivityIntent {
     static var supportedModes: IntentModes { .background }
     static var allowedExecutionTargets: IntentExecutionTargets { .main }
     func perform() async throws -> some IntentResult {
-        #if !SCROLLSTITCH_CONTROLS && !SCROLLSTITCH_COLLAGE_ONLY && canImport(ScreenCaptureKit)
+        #if !SCROLLSTITCH_CONTROLS && canImport(ScreenCaptureKit)
         await ScrollCaptureCoordinator.shared.nextPage()
         #else
         throw ScrollControlError.mainAppRequired
@@ -46,7 +46,7 @@ struct FinishScrollIntent: LiveActivityIntent {
     static var supportedModes: IntentModes { .background }
     static var allowedExecutionTargets: IntentExecutionTargets { .main }
     func perform() async throws -> some IntentResult {
-        #if !SCROLLSTITCH_CONTROLS && !SCROLLSTITCH_COLLAGE_ONLY && canImport(ScreenCaptureKit)
+        #if !SCROLLSTITCH_CONTROLS && canImport(ScreenCaptureKit)
         await ScrollCaptureCoordinator.shared.finish()
         #else
         throw ScrollControlError.mainAppRequired

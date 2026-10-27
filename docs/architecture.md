@@ -30,4 +30,4 @@ App Group 下 `Library/ScrollStitch/scrolls/<session>` 为每个滚动作品保�
 
 ## 构建边界
 
-Xcode 项目由 `scripts/generate_project.py` 生成。开发版嵌入 `ScrollControls`；Store 版通过编译条件关闭采集和闹钟入口、移除对应权限及扩展。Swift Package 在 macOS 上验证 Core/Imaging，不代表 iPhone 系统授权、后台执行或实际响铃通过。
+Xcode 项目由 `scripts/generate_project.py` 生成。开发版和 Store 版均嵌入 `ScrollControls`，保留滚动截图、拼图、AlarmKit 与随包年度数据。Store 模式通过 `SCROLLSTITCH_STORE` 关闭内部操作工具，主 App 与扩展版本一致；不会依据启动参数或偏好开启内部入口。Swift Package 在 macOS 上验证 Core/Imaging，不代表 iPhone 系统授权、后台执行或实际响铃通过。

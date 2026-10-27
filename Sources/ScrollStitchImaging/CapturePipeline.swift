@@ -49,7 +49,7 @@ public struct CapturePipelineOutput:Sendable {
 /// Processes committed screen frames. Native recording never enters a video
 /// decoder, and analysis caches are optional derived data.
 public enum CapturePipeline {
-    public static let recipe = TaskStore.digest(data: Data("screen-frame-stitch-1".utf8))
+    public static let recipe = TaskStore.digest(data: Data("screen-frame-stitch-2".utf8))
     /// Preserve successful result IDs and their Photos ledger, but recompute a
     /// failed attempt even when it was produced by the current algorithm.
     public static func resume(store: TaskStore, taskID: UUID, selectionFingerprint: String,

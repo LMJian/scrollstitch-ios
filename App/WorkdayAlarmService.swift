@@ -1,4 +1,3 @@
-#if !SCROLLSTITCH_COLLAGE_ONLY
 import SwiftUI
 import AlarmKit
 import AppIntents
@@ -209,4 +208,3 @@ enum WorkdayAlarmBackground {
         try? await BGTaskScheduler.shared.submitTaskRequest(request)
     }
 }
-#endif

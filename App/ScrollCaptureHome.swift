@@ -1,4 +1,4 @@
-#if !SCROLLSTITCH_COLLAGE_ONLY && canImport(ScreenCaptureKit)
+#if canImport(ScreenCaptureKit)
 import SwiftUI
 import UserNotifications
 
@@ -56,7 +56,7 @@ struct ScrollCaptureHome:View {
                             Button {capture.openedWork=work} label: {
                                 HStack(spacing:16) {
                                     if work.id == capture.session?.id,let thumbnail=capture.latestThumbnail {
-                                        Image(uiImage:thumbnail).resizable().scaledToFill().frame(width:60,height:80).clipped().clipShape(RoundedRectangle(cornerRadius:8))
+                                        Image(uiImage:thumbnail).resizable().scaledToFill().frame(width:60,height:80).clipped().clipShape(RoundedRectangle(cornerRadius:8)).accessibilityHidden(true)
                                     } else {ScrollWorkThumbnail(work:work)}
                                     VStack(alignment:.leading,spacing:6) {
                                         Text(work.phase == .saved ? "已保存到照片":label(work.phase)).font(.headline)
@@ -232,6 +232,8 @@ private struct ScrollWorkViewer:View {
             }.navigationTitle("完整长图").navigationBarTitleDisplayMode(.inline)
                 .toolbar {ToolbarItem(placement:.confirmationAction) {Button("关闭") {dismiss()}}}
                 .task(id:page) {
+                    image=nil
+                    message="正在读取长图…"
                     do {
                         guard let group=Bundle.main.object(forInfoDictionaryKey:"ScrollStitchAppGroup") as? String,
                               let root=FileManager.default.containerURL(forSecurityApplicationGroupIdentifier:group) else {throw ScrollStitchError.storageFailure}
@@ -242,10 +244,18 @@ private struct ScrollWorkViewer:View {
                             message="内容未完整连接，全部原始素材已保留";return
                         }
                         images=result.pages.map(\.result)
-                        let access=try store.openResult(taskID:work.taskID,resultID:images[page].id)
-                        let decoded=try await Task.detached {try ImageDecoder.normalized(access.url)}.value
+                        let access=try await store.openResultForPreview(taskID:work.taskID,resultID:images[page].id)
+                        let decoded=try await Task.detached {
+                            try withExtendedLifetime(access) {try ImageDecoder.normalized(access.url)}
+                        }.value
+                        try Task.checkCancellation()
                         image=UIImage(cgImage:decoded)
-                    } catch {message="无法读取成品，原始素材已保留"}
+                    } catch is CancellationError { return
+                    } catch ScrollStitchError.resourceBusy {
+                        message="图片正在使用，请稍后重新打开"
+                    } catch {
+                        message="无法读取成品，原始素材已保留"
+                    }
                 }
         }
     }
@@ -258,7 +268,7 @@ private struct ScrollWorkThumbnail:View {
         Group {
             if let image {Image(uiImage:image).resizable().scaledToFill()}
             else {Image(systemName:"photo.on.rectangle").font(.title)}
-        }.frame(width:60,height:80).clipped().clipShape(RoundedRectangle(cornerRadius:8))
+        }.frame(width:60,height:80).clipped().clipShape(RoundedRectangle(cornerRadius:8)).accessibilityHidden(true)
             .task(id:work.phase) {
                 guard work.phase == .saved,
                       let group=Bundle.main.object(forInfoDictionaryKey:"ScrollStitchAppGroup") as? String,
@@ -268,9 +278,13 @@ private struct ScrollWorkThumbnail:View {
                     let store=try library.store(for:work.id)
                     guard let first=try store.captureResultSet(taskID:work.taskID,
                         selectionFingerprint:TaskStore.digest(data:Data(work.id.uuidString.utf8)))?.pages.first else {return}
-                    let access=try store.openResult(taskID:work.taskID,resultID:first.result.id)
-                    let decoded=try await Task.detached {try ImageDecoder.normalized(access.url,maxDimension:320)}.value
+                    let access=try await store.openResultForPreview(taskID:work.taskID,resultID:first.result.id)
+                    let decoded=try await Task.detached {
+                        try withExtendedLifetime(access) {try ImageDecoder.normalized(access.url,maxDimension:320)}
+                    }.value
+                    try Task.checkCancellation()
                     image=UIImage(cgImage:decoded)
+                } catch is CancellationError { return
                 } catch {image=nil}
             }
     }

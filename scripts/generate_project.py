@@ -46,11 +46,12 @@ base_info = {
 }
 app_info = dict(base_info, CFBundleDisplayName='卷轴', CFBundlePackageType='APPL',
     LSRequiresIPhoneOS=True, NSPhotoLibraryAddUsageDescription='用于将你生成的长图或拼图保存到相册', UILaunchScreen={}, UISupportedInterfaceOrientations=['UIInterfaceOrientationPortrait'])
-plist('App/Info.plist', dict(app_info, NSScreenCaptureUsageDescription='用于录制你选择共享的屏幕，在本机生成滚动长截图',
+full_app_info = dict(app_info, NSScreenCaptureUsageDescription='用于录制你选择共享的屏幕，在本机生成滚动长截图',
     NSAlarmKitUsageDescription='用于按你的工作日和调休安排设置起床闹钟，静音和专注模式下也能提醒',
     UIBackgroundModes=['screen-capture','processing','fetch'], NSSupportsLiveActivities=True,
-    BGTaskSchedulerPermittedIdentifiers=['$(PRODUCT_BUNDLE_IDENTIFIER).finish-scroll','$(PRODUCT_BUNDLE_IDENTIFIER).refresh-alarms']))
-plist('App/Info-Store.plist', app_info)
+    BGTaskSchedulerPermittedIdentifiers=['$(PRODUCT_BUNDLE_IDENTIFIER).finish-scroll','$(PRODUCT_BUNDLE_IDENTIFIER).refresh-alarms'])
+plist('App/Info.plist', full_app_info)
+plist('App/Info-Store.plist', dict(full_app_info, ITSAppUsesNonExemptEncryption=False))
 plist('App/ScrollStitch.entitlements', {'com.apple.security.application-groups': ['$(SCROLLSTITCH_APP_GROUP)']})
 plist('Controls/Info.plist', dict(base_info, CFBundleDisplayName='卷轴控制', CFBundlePackageType='XPC!',
     NSExtension={'NSExtensionPointIdentifier':'com.apple.widgetkit-extension'}))
@@ -67,7 +68,8 @@ for folder in ('App', 'Sources', 'Shared', 'Controls'):
 resource_paths = {
     'App': ['App/PrivacyInfo.xcprivacy', 'App/Assets.xcassets', 'Resources/ProductInfo.json'] +
            [p.relative_to(ROOT).as_posix() for p in sorted((ROOT / 'Resources/Holidays').glob('*.json'))],
-    'Store': ['App/PrivacyInfo.xcprivacy', 'App/Assets.xcassets', 'Resources/Store/ProductInfo.json'],
+    'Store': ['App/PrivacyInfo.xcprivacy', 'App/Assets.xcassets', 'Resources/Store/ProductInfo.json'] +
+             [p.relative_to(ROOT).as_posix() for p in sorted((ROOT / 'Resources/Holidays').glob('*.json'))],
     'Controls': ['Controls/PrivacyInfo.xcprivacy'],
 }
 resource_refs = {}
@@ -88,9 +90,13 @@ def configurations(name, settings, base=None):
     for mode in ('Debug', 'Release', 'Store'):
         fields = dict(buildSettings=dict(settings, SWIFT_OPTIMIZATION_LEVEL='-Onone' if mode == 'Debug' else '-O'), name=mode)
         if name == 'ScrollStitchStore':
-            fields['buildSettings']['SWIFT_ACTIVE_COMPILATION_CONDITIONS'] = '$(inherited) SCROLLSTITCH_STORE SCROLLSTITCH_COLLAGE_ONLY'
+            fields['buildSettings']['SWIFT_ACTIVE_COMPILATION_CONDITIONS'] = '$(inherited) SCROLLSTITCH_STORE'
         elif mode == 'Store' and name != 'ScrollControls':
             fields['buildSettings']['SWIFT_ACTIVE_COMPILATION_CONDITIONS'] = '$(inherited) SCROLLSTITCH_STORE'
+        if name == 'ScrollControls' and mode == 'Store':
+            fields['buildSettings'].update(MARKETING_VERSION='1.0.0', CURRENT_PROJECT_VERSION='1',
+                SCROLLSTITCH_EDITION='appStore',
+                SWIFT_ACTIVE_COMPILATION_CONDITIONS='$(inherited) SCROLLSTITCH_CONTROLS SCROLLSTITCH_STORE')
         if base:
             fields['baseConfigurationReference'] = base
         ids.append(obj(f'{name}-{mode}', 'XCBuildConfiguration', **fields))
@@ -106,7 +112,7 @@ for name, folder, product, bundle_suffix in (
     for rel, ref in source_refs.items():
         if (rel.startswith(folder + '/') or
             (folder == 'App' and rel.startswith('Sources/')) or
-            (name != 'ScrollStitchStore' and rel.startswith('Shared/'))):
+            rel.startswith('Shared/')):
             files.append(obj(name + '-' + rel, 'PBXBuildFile', fileRef=ref))
     phase = obj(name+'-sources', 'PBXSourcesBuildPhase', buildActionMask='2147483647', files=files, runOnlyForDeploymentPostprocessing='0')
     frameworks = obj(name+'-frameworks', 'PBXFrameworksBuildPhase', buildActionMask='2147483647', files=[], runOnlyForDeploymentPostprocessing='0')
@@ -122,20 +128,20 @@ for name, folder, product, bundle_suffix in (
     phases = [phase, frameworks, resources]
     settings['ASSETCATALOG_COMPILER_APPICON_NAME'] = 'AppIcon'
     if name == 'ScrollStitchStore':
-        settings.update(SCROLLSTITCH_EDITION='collageOnly', MARKETING_VERSION='1.0.0', CURRENT_PROJECT_VERSION='1',
+        settings.update(SCROLLSTITCH_EDITION='appStore', MARKETING_VERSION='1.0.0', CURRENT_PROJECT_VERSION='1',
             INFOPLIST_FILE='App/Info-Store.plist')
     elif name == 'ScrollControls':
         settings.update(APPLICATION_EXTENSION_API_ONLY='YES',SKIP_INSTALL='YES',
             SWIFT_ACTIVE_COMPILATION_CONDITIONS='$(inherited) SCROLLSTITCH_CONTROLS',
             LD_RUNPATH_SEARCH_PATHS='$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks')
         settings.pop('ASSETCATALOG_COMPILER_APPICON_NAME',None)
-    else:
-        embedded=obj('embed-controls-file','PBXBuildFile',fileRef=controls_product,settings={'ATTRIBUTES':['RemoveHeadersOnCopy']})
-        phases.append(obj('embed-controls','PBXCopyFilesBuildPhase',buildActionMask='2147483647',dstPath='',dstSubfolderSpec='13',
+    if name != 'ScrollControls':
+        embedded=obj(name+'-embed-controls-file','PBXBuildFile',fileRef=controls_product,settings={'ATTRIBUTES':['RemoveHeadersOnCopy']})
+        phases.append(obj(name+'-embed-controls','PBXCopyFilesBuildPhase',buildActionMask='2147483647',dstPath='',dstSubfolderSpec='13',
             files=[embedded],name='Embed Controls',runOnlyForDeploymentPostprocessing='0'))
-        proxy=obj('controls-proxy','PBXContainerItemProxy',containerPortal=key('project'),proxyType='1',
+        proxy=obj(name+'-controls-proxy','PBXContainerItemProxy',containerPortal=key('project'),proxyType='1',
             remoteGlobalIDString=key('ScrollControls'),remoteInfo='ScrollControls')
-        dependencies.append(obj('controls-dependency','PBXTargetDependency',target=key('ScrollControls'),targetProxy=proxy))
+        dependencies.append(obj(name+'-controls-dependency','PBXTargetDependency',target=key('ScrollControls'),targetProxy=proxy))
     obj(name, 'PBXNativeTarget', buildConfigurationList=configurations(name, settings), buildPhases=phases,
         buildRules=[], dependencies=dependencies, name=name, productName=name, productReference=product,
         productType='com.apple.product-type.app-extension' if name == 'ScrollControls' else 'com.apple.product-type.application')

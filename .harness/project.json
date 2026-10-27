@@ -68,10 +68,18 @@
         "python3",
         "scripts/check_public_tree.py"
       ]
+    },
+    "store-materials": {
+      "argv": [
+        "python3",
+        "scripts/check_store_materials.py"
+      ],
+      "tier": "critical"
     }
   },
   "stage_checks": {
     "review": [
+      "store-materials",
       "public-tree",
       "unit",
       "config",

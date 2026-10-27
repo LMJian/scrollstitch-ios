@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "asOf": "2026-10-27",
+  "scope": "account-independent preparation",
+  "decisions": {
+    "edition": "full",
+    "price": "free",
+    "territories": [
+      "CHN"
+    ],
+    "supportEmail": "limingjian.yy@gmail.com",
+    "copyright": "2026 李明健",
+    "gui": "physical-device work paused by user; Mac-only work continues"
+  },
+  "pending": [
+    {
+      "id": "apple-account",
+      "status": "deferred_by_user",
+      "reason": "开发者账号暂不准备；正式分发签名、上传、TestFlight、审核与正式发布待办。当前真机使用既有开发身份。"
+    },
+    {
+      "id": "mainland-filing",
+      "status": "requires_owner",
+      "reason": "北京市个人主体材料已准备；暂无本人实名域名，需选定有备案资格的实际接入服务并取得正式发行签名，未申报。"
+    },
+    {
+      "id": "privacy-label",
+      "status": "answers_prepared",
+      "reason": "逐项答案与源码/托管政策已核对；正式接入服务确定后复核日志用途、身份关联及分类，再由提交人填入 App Store Connect。"
+    },
+    {
+      "id": "device-acceptance",
+      "status": "paused_by_user",
+      "reason": "已完成备份、升级一致性核验及纵向自动生成保存；发现预览读取竞争和系统面板混入横向匹配问题。修复在 Mac 验证，未重新安装；用户取回手机，后续验收暂停。"
+    },
+    {
+      "id": "device-cleanup",
+      "status": "waiting_for_device",
+      "reason": "测试已停止且未创建测试闹钟；设备断开后自动恢复网络未能执行，已告知用户重连 Wi-Fi/VPN。临时验收 App、测试驱动和新增的控制中心控件待清理。"
+    }
+  ],
+  "completed": [
+    {
+      "id": "site-publication",
+      "status": "published_and_verified",
+      "commit": "c19a7251782391c147dc9a96fe0582ca9ed3345c",
+      "deployment": "https://github.com/LMJian/LMJian.github.io/actions/runs/40362639245",
+      "verification": "介绍、支持与隐私页面均 HTTP 200，内容与生成文件逐字节一致。"
+    },
+    {
+      "id": "simulator-materials",
+      "status": "verified",
+      "verification": "Store 1.0.0（1），iPhone 17 Pro / iOS 27.0；三条 UI 路径通过，6 张原始 1206×2622 RGB 截图。拼图成品顺序/完整像素及模拟器相册文件一致性通过；年度更新返回最新版本；不包含真实响铃或录屏结论。"
+    },
+    {
+      "id": "review-phone",
+      "status": "provided_privately",
+      "verification": "已收到审核电话并保存到被忽略的私有材料，公开 metadata 的 phone 保持 null。"
+    },
+    {
+      "id": "artwork-rights",
+      "status": "confirmed_by_owner",
+      "verification": "用户明确确认当前图标具有商业使用权。"
+    },
+    {
+      "id": "production-annual-download",
+      "status": "verified",
+      "verification": "生产下载代码成功获取 HTTPS index 和 2026:v1 年度文件，SHA-256/格式/年份验证与离线重开缓存通过；不代表真机响铃。"
+    },
+    {
+      "id": "screenshots",
+      "status": "prepared",
+      "verification": "10 张原始 1206×2622 RGB PNG：6 张模拟器，4 张真机；均为自有素材，已记录所用候选包摘要。截图早于最后的代码修复，不代表修复已真机验收。"
+    },
+    {
+      "id": "retained-capture-replay",
+      "status": "verified_locally",
+      "verification": "两份原始录制共 166 个输入文件大小/SHA-256 一致；纵向 1206×9686、横向 4976×2436 完整重放并检查编号、起止像素和固定栏。仅 Mac 重放，未操作手机或写入 Photos。"
+    }
+  ]
+}

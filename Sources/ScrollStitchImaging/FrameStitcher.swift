@@ -1738,10 +1738,8 @@ final class FrameStitcher {
         var urls: [URL] = []
         for url in pieces.compactMap(\.frameURL) where !urls.contains(url) { urls.append(url) }
         guard urls.count > 1 else { return (statusHeight, 0) }
-        var selected: [URL] = []
-        for url in [urls[0], urls[urls.count / 2], urls[urls.count - 1]] where !selected.contains(url) { selected.append(url) }
         let width = 96
-        let rows: [[UInt8]] = selected.compactMap { url in
+        func rows(_ url: URL) -> [UInt8]? {
             guard let image = UIImage(contentsOfFile: url.path)?.cgImage else { return nil }
             var pixels = [UInt8](repeating: 0, count: width * height)
             let valid = pixels.withUnsafeMutableBytes { memory -> Bool in
@@ -1753,24 +1751,28 @@ final class FrameStitcher {
             }
             return valid ? pixels : nil
         }
-        guard rows.count == selected.count, let first = rows.first else { return (statusHeight, 0) }
-        func unchanged(_ y: Int) -> Bool {
-            rows.dropFirst().allSatisfy { other in
+        guard let first = autoreleasepool(invoking: { rows(urls[0]) }) else { return (statusHeight, 0) }
+        // Use every contributing viewport, one at a time. First/middle/last can
+        // all coincide during a round trip and falsely classify moving rows as
+        // chrome. A large fixed header must not stop at an arbitrary 25% crop.
+        var moving = [Bool](repeating:false,count:height)
+        for url in urls.dropFirst() {
+            guard let other = autoreleasepool(invoking: { rows(url) }) else { return (statusHeight, 0) }
+            for y in statusHeight..<height where !moving[y] {
                 var difference = 0, changed = 0
                 for x in 0..<width {
                     let d = abs(Int(first[y * width + x]) - Int(other[y * width + x]))
                     difference += d
                     if d > 10 { changed += 1 }
                 }
-                return difference <= width && changed <= 1
+                moving[y] = difference > width || changed > 1
             }
         }
-        var top = statusHeight
-        while top < Int(Double(height) * 0.25), unchanged(top) { top += 1 }
-        var bottom = 0
-        while bottom < Int(Double(height) * 0.20), unchanged(height - bottom - 1) { bottom += 1 }
-        // A two-pixel guard leaves antialiased borders with the moving content.
-        return (max(statusHeight, top - 2), max(0, bottom - 2))
+        guard let top = moving.firstIndex(of:true), let bottom = moving.lastIndex(of:true) else {
+            return (statusHeight, 0)
+        }
+        // Leave antialiased boundaries with the moving content.
+        return (max(statusHeight, top - 2), max(0, height - bottom - 3))
     }
 
     private func removeOldOutputs(from directory: URL) throws {
@@ -2064,8 +2066,9 @@ enum CaptureOverlayDetector {
             }
         }
 
-        // OCR is only run for a large neutral-gray card, never for every normal
-        // frame. Confirm the sharing controls before discarding an entire frame.
+        // The sharing card can pick up saturated colors from the blurred app.
+        // Its dimmed outer backdrop remains neutral even when the center does not.
+        // These pixels only gate OCR; they never justify dropping a frame alone.
         var neutral = 0, checked = 0
         for y in Int(Double(height) * 0.39)..<Int(Double(height) * 0.61) {
             for x in 24..<72 {
@@ -2077,10 +2080,20 @@ enum CaptureOverlayDetector {
             }
         }
         var isSystemPanel = false
+        var neutralBackdrop = 0, backdropCount = 0
+        let backdropColumns = Array(0..<8) + Array(88..<96)
+        for y in Int(Double(height) * 0.17)..<Int(Double(height) * 0.91) {
+            for x in backdropColumns {
+                let (r, g, b) = rgb(x, y)
+                backdropCount += 1
+                if max(r, g, b) - min(r, g, b) < 16, r > 65, r < 205 { neutralBackdrop += 1 }
+            }
+        }
         // Blurred screen-sharing sheets can have a substantial gray gradient
         // before our activity appears. Neutral coverage only gates OCR work;
         // the sharing-control text must still positively identify the panel.
-        if checked > 0, Double(neutral) / Double(checked) > 0.72 {
+        if (checked > 0 && Double(neutral) / Double(checked) > 0.72)
+            || (backdropCount > 0 && Double(neutralBackdrop) / Double(backdropCount) > 0.80) {
             let request = VNRecognizeTextRequest()
             request.recognitionLevel = .fast
             request.recognitionLanguages = ["en-US"]
@@ -2102,6 +2115,42 @@ enum CaptureOverlayDetector {
                         || text.contains("share entire screen")
                         || (compact.contains("屏幕共享") && compact.contains("停止共享"))
                         || compact.contains("共享整个屏幕")
+                    // Control Center may be captured while the user finishes.
+                    // Require its independent audio/focus widgets in their actual
+                    // screen positions, not a paragraph merely mentioning them.
+                    let observations = request.results ?? []
+                    let audio = observations.first { observation in
+                        guard let text = observation.topCandidates(1).first?.string.lowercased() else { return false }
+                        return (text.contains("未在播放") || text.contains("not playing"))
+                            && observation.boundingBox.midX > 0.55 && observation.boundingBox.midY > 0.55
+                    }
+                    let focus = observations.first { observation in
+                        guard let text = observation.topCandidates(1).first?.string.lowercased() else { return false }
+                        return (text.contains("专注模式") || text == "focus")
+                            && observation.boundingBox.midX < 0.55
+                    }
+                    let network = observations.contains { observation in
+                        guard observation.boundingBox.midY > 0.80,
+                              let text = observation.topCandidates(1).first?.string.lowercased() else { return false }
+                        return ["5g", "4g", "lte", "vpn", "sim"].contains(where: text.contains)
+                    }
+                    if network, let audio {
+                        if let focus, audio.boundingBox.midY - focus.boundingBox.midY > 0.08 {
+                            isSystemPanel = true
+                        } else if focus == nil {
+                            // Text during the panel's fade can be too faint for
+                            // whole-screen OCR. Inspect only the focus-widget
+                            // area after the other two widgets were confirmed.
+                            request.regionOfInterest = CGRect(x:0,y:0.35,width:0.55,height:0.25)
+                            request.minimumTextHeight = 0.005
+                            if (try? VNImageRequestHandler(cgImage:image).perform([request])) != nil {
+                                isSystemPanel = (request.results ?? []).contains { observation in
+                                    guard let text=observation.topCandidates(1).first?.string.lowercased() else {return false}
+                                    return text.contains("专注模式") || text == "focus"
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

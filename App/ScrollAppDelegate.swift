@@ -1,4 +1,4 @@
-#if !SCROLLSTITCH_COLLAGE_ONLY && canImport(ScreenCaptureKit)
+#if canImport(ScreenCaptureKit)
 import UIKit
 import UserNotifications
 

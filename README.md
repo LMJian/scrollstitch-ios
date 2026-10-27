@@ -10,7 +10,7 @@
 
 闹钟固定使用北京时间。最多预排未来 90 天内最近 64 次，打开闹钟页、停止闹钟及系统允许的后台刷新会补齐；后台刷新不是无限期保障。请关注首页实际回读确认的覆盖日期。缺少某年的年度数据时，不猜测该年的法定工作日。已下载数据和已排程闹钟可离线使用。
 
-`ScrollStitch` 是包含三个功能的开发版；`ScrollStitchStore` 是独立的竖向拼图版本，不包含录屏、控制中心、灵动岛或闹钟。仓库源码、未签名构建和 App Store 上架是不同的交付物。
+`ScrollStitch` 是开发版；`ScrollStitchStore` 是包含全部三个功能的正式发行目标，保留控制中心、灵动岛与年度数据，并关闭内部操作工具。首发准备为免费、中国大陆、iPhone / iOS 27+。仓库源码、未签名候选包和 App Store 上架是不同的交付物。
 
 ## 构建和运行
 
@@ -33,6 +33,7 @@ bash scripts/check.sh device-build
 - [验证方式和证据边界](docs/testing.md)
 - [公开文件与发布检查](docs/publishing.md)
 - [隐私 API 使用清单](docs/privacy-inventory.json)
+- [App Store 准备包与剩余事项](docs/app-store/README.md)
 
 年度下载入口为 [GitHub Pages JSON 索引](https://lmjian.github.io/assets/holidays/cn/index.json)。入口只是静态文件，不依赖博客网页、页面脚本或账号登录。维护者需要根据官方通知发布新年度或更正版本；客户端不会抓取新闻并自动推断放假日期。
 

@@ -12,8 +12,15 @@ public struct ProductInformation: Decodable, Sendable {
     public let sections: [Section]
     private let supportURL: String?
     private let privacyURL: String?
+    private let supportEmail: String?
     public var supportLink: URL? { schemaVersion == 1 ? Self.safeHTTPS(supportURL) : nil }
     public var privacyLink: URL? { schemaVersion == 1 ? Self.safeHTTPS(privacyURL) : nil }
+    public var supportEmailLink: URL? {
+        guard schemaVersion == 1, let supportEmail,
+              supportEmail.range(of: #"\A[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}\z"#,
+                                 options: .regularExpression) != nil else { return nil }
+        return URL(string: "mailto:" + supportEmail)
+    }
 
     public static func decode(_ data: Data) throws -> Self {
         let value = try JSONDecoder().decode(Self.self, from: data)

@@ -51,6 +51,46 @@ final class ResultExportTests: XCTestCase {
         XCTAssertThrowsError(try store.openResult(taskID:result.taskID,resultID:result.id))
         XCTAssertNotNil(try store.current())
     }
+    @MainActor func testPreviewWaitsForConcurrentThumbnailWithoutChangingSavedBytes() async throws {
+        let (store,result)=try fixture()
+        var thumbnail:ResultAccess?=try store.openResult(taskID:result.taskID,resultID:result.id)
+        XCTAssertThrowsError(try store.openResult(taskID:result.taskID,resultID:result.id)) {
+            XCTAssertEqual($0 as? ScrollStitchError,.resourceBusy)
+        }
+        let preview=Task { try await store.openResultForPreview(taskID:result.taskID,resultID:result.id) }
+        try await Task.sleep(for:.milliseconds(60))
+        XCTAssertNotNil(thumbnail)
+        thumbnail=nil
+        let access=try await preview.value
+        XCTAssertEqual(try TaskStore.digest(url:access.url),result.sha256)
+        XCTAssertNil(try store.photoSaveRecord(access))
+        XCTAssertFalse(try store.cleanup(taskID:result.taskID,explicit:true))
+        withExtendedLifetime(access) {}
+    }
+    @MainActor func testPreviewBusyWaitHasDeadlineAndHonorsCancellation() async throws {
+        let (store,result)=try fixture()
+        let owner=try store.openResult(taskID:result.taskID,resultID:result.id)
+        do {
+            _=try await store.openResultForPreview(taskID:result.taskID,resultID:result.id,wait:.milliseconds(30))
+            XCTFail("A held exclusive owner must not be bypassed")
+        } catch { XCTAssertEqual(error as? ScrollStitchError,.resourceBusy) }
+        let pending=Task {try await store.openResultForPreview(taskID:result.taskID,resultID:result.id)}
+        pending.cancel()
+        do { _=try await pending.value;XCTFail("Cancelled preview should not acquire files") }
+        catch { XCTAssertTrue(error is CancellationError) }
+        XCTAssertEqual(try TaskStore.digest(url:owner.url),result.sha256)
+        withExtendedLifetime(owner) {}
+    }
+    func testPreviewDoesNotHideCorruptResultAsTemporaryContention() async throws {
+        let (store,result)=try fixture()
+        let url=try result.path.resolved(in:store.taskDirectory(result.taskID))
+        try Data([0,1,2]).write(to:url)
+        do {
+            _=try await store.openResultForPreview(taskID:result.taskID,resultID:result.id)
+            XCTFail("Corrupt results must remain unreadable")
+        } catch { XCTAssertNotEqual(error as? ScrollStitchError,.resourceBusy) }
+        XCTAssertNotNil(try store.current())
+    }
     func testCorruptResultDoesNotDeleteSourcesOrCurrentTask() throws {
         let (store,result)=try fixture(), dir=try store.taskDirectory(result.taskID)
         let original=dir.appendingPathComponent("assets/sentinel.bin")

@@ -21,18 +21,29 @@ class ReleaseChecksTests(unittest.TestCase):
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(ROOT / name, target)
 
-    def testCollagePackageRejectsHiddenExtensionAndWrongEdition(self):
-        info = {'ScrollStitchEdition':'collageOnly', 'CFBundleDisplayName':'卷轴',
-                'CFBundleShortVersionString':'1.0.0', 'CFBundleVersion':'1'}
+    def testFullStorePackageRejectsMissingFeaturesAndWrongEdition(self):
+        info = {'ScrollStitchEdition':'appStore', 'CFBundleDisplayName':'卷轴',
+                'CFBundleShortVersionString':'1.0.0', 'CFBundleVersion':'1',
+                'NSScreenCaptureUsageDescription':'record', 'NSAlarmKitUsageDescription':'alarm',
+                'UIBackgroundModes':['screen-capture','processing','fetch'],
+                'ITSAppUsesNonExemptEncryption':False}
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            release.collage_bundle_check(root, info)
-            with self.assertRaisesRegex(ValueError, 'not a collage-only'):
-                release.collage_bundle_check(root, {**info, 'ScrollStitchEdition':'developer'})
+            with self.assertRaisesRegex(ValueError, 'exactly one control extension'):
+                release.store_bundle_check(root, info)
+            (root/'PlugIns/ScrollControls.appex').mkdir(parents=True)
+            (root/'2026.v1.json').write_text('{}')
+            release.store_bundle_check(root, info)
+            for missing in ('NSScreenCaptureUsageDescription', 'NSAlarmKitUsageDescription', 'UIBackgroundModes', 'ITSAppUsesNonExemptEncryption'):
+                changed=copy.deepcopy(info); changed.pop(missing)
+                with self.subTest(missing=missing), self.assertRaises(ValueError):
+                    release.store_bundle_check(root, changed)
+            with self.assertRaisesRegex(ValueError, 'not an App Store candidate'):
+                release.store_bundle_check(root, {**info, 'ScrollStitchEdition':'developer'})
             extension = root / 'PlugIns/Hidden.appex'
             extension.mkdir(parents=True)
-            with self.assertRaisesRegex(ValueError, 'contains an extension'):
-                release.collage_bundle_check(root, info)
+            with self.assertRaisesRegex(ValueError, 'exactly one control extension'):
+                release.store_bundle_check(root, info)
 
     def testResourcesFailForMissingManifest(self):
         for folder in ('App','Controls'):
@@ -57,6 +68,7 @@ class ReleaseChecksTests(unittest.TestCase):
 
     def testUnconfiguredDistributionRemainsBlocked(self):
         product = json.loads((ROOT / 'Resources/ProductInfo.json').read_text())
+        product.update(supportURL=None, privacyURL=None)
         decisions = {'schemaVersion': 1, 'decisions': {name: {'status': 'deferred'} for name in release.DECISIONS}}
         blockers = release.distribution_blockers(product, decisions, 'current', 'digest')
         self.assertTrue(any('supportURL' in s for s in blockers))

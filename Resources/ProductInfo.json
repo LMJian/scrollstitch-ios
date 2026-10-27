@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "policyVersion": "2026-10-21",
-  "effectiveDate": "2026-10-21",
-  "supportURL": null,
-  "privacyURL": null,
+  "policyVersion": "2026-10-27",
+  "effectiveDate": "2026-10-27",
+  "supportURL": "https://lmjian.github.io/apps/scrollstitch/support.html",
+  "privacyURL": "https://lmjian.github.io/apps/scrollstitch/privacy.html",
   "sections": [
     {
       "title": "图片留在本机",
@@ -30,8 +30,17 @@
       "body": "闹钟设置与单日例外保存在本机，响铃由 Apple 系统闹钟执行。进入闹钟功能后可通过 HTTPS 下载 GitHub Pages 的公开年度安排，也可关闭自动检查。请求不附带你的闹钟、日程或图片；下载失败时保留已有有效数据。所有时间均按北京时间计算。"
     },
     {
-      "title": "当前版本说明",
-      "body": "这是本地开发版本的数据使用说明。公开支持渠道和完整发布信息确认后会在此更新。"
+      "title": "网络请求与托管服务",
+      "body": "年度安排由 GitHub Pages 提供。下载时，托管服务会接收 IP 地址、请求时间、请求路径及网络客户端信息；GitHub 说明会为安全目的记录访问者 IP。卷轴不在请求中附带图片、录屏、闹钟、设备唯一标识或账户信息，不设置分析或广告 Cookie。可在年度安排中关闭自动检查；手动检查仍会发起网络请求。"
+    },
+    {
+      "title": "删除与保留",
+      "body": "可在应用中清除当前拼图或删除闹钟。滚动作品与素材目前保留在本机；如需清理全部本机数据，请先导出需要保留的结果再卸载应用。相册里的成品和你自行分享的副本不会随之删除。系统备份及托管服务日志由相应服务政策决定。"
+    },
+    {
+      "title": "联系开发者",
+      "body": "开发者与版权署名：李明健。支持与隐私问题请联系 limingjian.yy@gmail.com。请优先提供应用版本、系统版本及复现步骤，不要发送含私人内容的原图或录屏。主动发来的邮件及附件仅用于处理你的请求。"
     }
-  ]
+  ],
+  "supportEmail": "limingjian.yy@gmail.com"
 }

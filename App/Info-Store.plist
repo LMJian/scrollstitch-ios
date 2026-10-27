@@ -38,5 +38,24 @@
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 	</array>
+	<key>NSScreenCaptureUsageDescription</key>
+	<string>用于录制你选择共享的屏幕，在本机生成滚动长截图</string>
+	<key>NSAlarmKitUsageDescription</key>
+	<string>用于按你的工作日和调休安排设置起床闹钟，静音和专注模式下也能提醒</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>screen-capture</string>
+		<string>processing</string>
+		<string>fetch</string>
+	</array>
+	<key>NSSupportsLiveActivities</key>
+	<true/>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>$(PRODUCT_BUNDLE_IDENTIFIER).finish-scroll</string>
+		<string>$(PRODUCT_BUNDLE_IDENTIFIER).refresh-alarms</string>
+	</array>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 </dict>
 </plist>
