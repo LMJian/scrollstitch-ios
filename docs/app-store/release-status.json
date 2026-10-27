@@ -10,7 +10,7 @@
     ],
     "supportEmail": "limingjian.yy@gmail.com",
     "copyright": "2026 李明健",
-    "gui": "authorized device acceptance concluded; cleanup verified except VPN reconnection, handed back to user"
+    "gui": "authorized remaining device cases completed; test components removed; no more phone operation"
   },
   "pending": [
     {
@@ -27,16 +27,6 @@
       "id": "privacy-label",
       "status": "answers_prepared",
       "reason": "逐项答案与源码/托管政策已核对；正式接入服务确定后复核日志用途、身份关联及分类，再由提交人填入 App Store Connect。"
-    },
-    {
-      "id": "device-acceptance",
-      "status": "partially_verified",
-      "reason": "修复版本 85bf7ee 已安装并通过横向往返、暂停换页、自动保存回调和即时预览；在线后台及断网、静音、勿扰闹钟均由用户确认实际铃声。相册 App 独立读回与手机蜂窝直连更新/网页未完成，本轮不再扩展测试。"
-    },
-    {
-      "id": "device-cleanup",
-      "status": "vpn_requires_manual_restore",
-      "reason": "两个测试闹钟、临时 App/驱动和新增控件均已清理；原有 09:00 规则、47 个排程及 11 份作品保留。Wi-Fi、飞行模式、勿扰和截图方向已恢复；VPN 仍关闭，已通知用户手动开启。"
     }
   ],
   "completed": [
@@ -82,6 +72,20 @@
       "status": "verified",
       "commit": "85bf7eea3bf5b32596d8bcd0ddef0c7749c79817",
       "verification": "横向 4976×2436、两页衔接 1206×8527，实际成品检查与保存后即时预览通过。13:10 在线和 13:14 断网/勿扰系统提醒均出现，用户分别确认铃声；原有静音状态保持，测试闹钟已删除。"
+    },
+    {
+      "id": "remaining-device-acceptance",
+      "status": "verified",
+      "appBuildCommit": "85bf7eea3bf5b32596d8bcd0ddef0c7749c79817",
+      "verification": "系统相册独立打开两页 JPEG，确认 1206×8527。5G 直连更新检查返回最新版本（同版仅核对索引及摘要），支持页正文加载。取消共享无帧/无照片；录制进程中断后保留 13 帧、状态 interrupted，无成品或 Photos 写入。"
+    },
+    {
+      "id": "device-cleanup",
+      "status": "verified",
+      "verification": "临时 App 和 UI 驱动已卸载，无新增闹钟或控制。原有 09:00 规则、47 个排程与 11 份作品保留，另留两条异常验收记录。网络前后均为 Wi-Fi 未连接/VPN 关闭，截图方向为横向。"
     }
+  ],
+  "handoffNotes": [
+    "此前 VPN 未能恢复；本轮开始和结束均为关闭状态，已告知用户可手动开启。"
   ]
 }
