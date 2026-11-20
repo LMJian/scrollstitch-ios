@@ -360,6 +360,7 @@ final class FrameStitcher {
     var willRenderPage: () throws -> Void = {}
     private(set) var positions: [Int: Int] = [:]
     private(set) var classifiedPanels: Set<Int> = []
+    private(set) var refinedCandidateCount = 0
 
     init(usePreparedFrames: Bool = true, options: ScrollCaptureOptions = ScrollCaptureOptions()) {
         self.usePreparedFrames = usePreparedFrames
@@ -383,6 +384,7 @@ final class FrameStitcher {
         segmentStarts: [Int] = []
     ) throws -> StitchResult {
         let started = ProcessInfo.processInfo.systemUptime
+        refinedCandidateCount = 0
         guard !frameURLs.isEmpty else { throw StitchError.notEnoughFrames }
 
         var samples: [FrameSample] = []
@@ -592,38 +594,38 @@ final class FrameStitcher {
                 return 0
             }
             let comparison = comparison ?? OverlapEstimator.compareVertical(from: samples[previous].gray, to: samples[current].gray)
-            guard let estimate = comparison.estimate() else { return nil }
             let coarsePixelScale = contentHeight / CGFloat(samples[current].gray.height)
             let refinementRadius = max(6, Int(ceil(coarsePixelScale)) + 3)
             let previousPixels = try alignmentFrame(at: previous)
             let currentPixels = try alignmentFrame(at: current)
-            func refine(_ candidate: ShiftEstimate) -> ShiftEstimate? {
-                return OverlapEstimator.refineVerticalShift(
-                    from: previousPixels, to: currentPixels,
-                    around: Int(round(coarsePixelScale * CGFloat(candidate.rows))),
-                    searchRadius: refinementRadius
-                )
-            }
-            var refined = refine(estimate)
-            // Repeated text-card layouts can fool the low-resolution pass into
-            // choosing the opposite direction. Only pay for a second fine pass
-            // when the first is weak; keep the fast path for clean matches.
-            if refined == nil || refined!.score > 3 {
-                let other = estimate.rows > 0 ? comparison.upward?.estimate() : comparison.downward?.estimate()
-                if let other {
-                    let signed = estimate.rows > 0 ? ShiftEstimate(
-                        rows: -other.rows, score: other.score, confidence: other.confidence
-                    ) : other
-                    if let alternative = refine(signed),
-                       refined == nil || alternative.score + 0.4 < refined!.score {
-                        refined = alternative
-                    }
+            var verified: [ShiftEstimate] = []
+            // Repeated cards can rank the wrong row or direction first in a
+            // thumbnail. Let native-height pixels resolve competitive peaks
+            // in both directions before committing a document position.
+            for (direction, choices) in [(1, comparison.downward), (-1, comparison.upward)] {
+                guard let choices, let coarse = choices.estimate() else { continue }
+                // Match the existing horizontal matcher's coarse-score allowance.
+                let tolerance = 5.0
+                var coarseRows: [Int] = []
+                for candidate in choices.candidates.sorted(by: { $0.score < $1.score }) {
+                    guard candidate.score <= coarse.score + tolerance,
+                          coarseRows.allSatisfy({ abs($0 - candidate.shift) > 2 }) else { continue }
+                    try check()
+                    coarseRows.append(candidate.shift)
+                    refinedCandidateCount += 1
+                    if let value = OverlapEstimator.refineVerticalShift(
+                        from: previousPixels, to: currentPixels,
+                        around: direction * Int(round(coarsePixelScale * CGFloat(candidate.shift))),
+                        searchRadius: refinementRadius
+                    ) { verified.append(value) }
                 }
             }
-            guard let refined, refined.score <= 6 else { return nil }
+            verified.sort { $0.score < $1.score }
+            guard let refined = verified.first, refined.score <= 6 else { return nil }
+            if let rival = verified.dropFirst().first(where: { abs($0.rows - refined.rows) > 2 }),
+               rival.score - refined.score < 0.15 { return nil }
 #if SCROLL_CAPTURE_DIAGNOSTICS
-            let coarseShiftPixels = Int(round(coarsePixelScale * CGFloat(estimate.rows)))
-            Self.alignmentTrace?("edge \(previous)->\(current) coarse=\(coarseShiftPixels) refined=\(refined.rows) score=\(refined.score)")
+            Self.alignmentTrace?("edge \(previous)->\(current) refined=\(refined.rows) score=\(refined.score)")
 #endif
             return refined.rows
         }
@@ -746,10 +748,10 @@ final class FrameStitcher {
                     reference = PositionedFrame(index: current, offset: reference.offset + shift)
                     positioned.append(reference)
                 }
-                if options.axis == .horizontal, let last = indices.last,
+                if let last = indices.last,
                    !positioned.contains(where: { $0.index == last }) {
-                    // Never report a complete sheet after silently dropping
-                    // an unmatched final region of a sparse/repeating table.
+                    // Never report a complete capture after silently dropping
+                    // an unmatched final viewport.
                     throw StitchError.unseenGap
                 }
                 guard let minimum = positioned.map(\.offset).min(),
@@ -965,7 +967,6 @@ final class FrameStitcher {
     }
 
     private func sameViewport(_ a: GrayFrame, _ b: GrayFrame) -> Bool {
-        if options.axis == .vertical { return OverlapEstimator.meanAbsoluteDifference(a, b) < 2.6 }
         return HorizontalScrollMatcher.sameViewport(a, b)
     }
 

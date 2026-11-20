@@ -33,3 +33,5 @@
 网站提交 `e114bd81a511bd24c9837b70815c81d5bbced380` 已完成 GitHub Pages 部署，介绍、隐私与支持三个 URL 均返回 HTTP 200，正文与当前生成源码逐字节一致。[部署记录](https://github.com/LMJian/LMJian.github.io/actions/runs/44683479856)
 
 用户确认尚无付费 Apple Developer Program 会员、本人实名域名或 APP 备案号。正式导出实际失败，当前团队无权创建 iOS App Store 描述文件，主 App 与控制扩展均缺少发行描述文件。会员开通、适用备案、App Store Connect 应用记录、签名上传与审核提交仍待完成。
+
+随后用户提供 Apple Developer Program 注册申请审核中的截图，账户交接状态已更新为待审核生效。此前导出失败保留为当时的实测结果，正式权限待生效后重新核验。

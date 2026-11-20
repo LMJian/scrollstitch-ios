@@ -158,6 +158,16 @@ final class CapturePipelineTests: XCTestCase {
         XCTAssertEqual(set.status,.noUsableContent);XCTAssertTrue(set.pages.isEmpty)
         XCTAssertEqual(try value.0.captureSnapshot(taskID:value.1,verifyFiles:true).frames.count,3)
     }
+
+    func testUnmatchedVerticalTailCannotPublishComplete() async throws {
+        let capture = try record([[0, 160, 320, 10_000]])
+        let set = try await run(capture)
+        XCTAssertEqual(set.status, .recoverableFailure)
+        XCTAssertTrue(set.pages.isEmpty)
+        XCTAssertFalse(set.gaps.isEmpty)
+        let snapshot = try capture.0.captureSnapshot(taskID: capture.1, verifyFiles: true)
+        XCTAssertEqual(snapshot.frames.count, 4)
+    }
     func testHorizontalTallFixedHeaderIsRenderedOnlyOnce() async throws {
         let w=390,h=844,shift=120,header=340,footer=180
         let store=try storage()

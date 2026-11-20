@@ -1,6 +1,6 @@
 # 卷轴 App Store 准备包
 
-用户已确认三功能完整版、免费、中国大陆、支持邮箱 limingjian.yy@gmail.com、版权 2026 李明健。当前尚无付费 Apple Developer Program 会员和 APP 备案号。材料已准备，滚动截图完整性失败仍阻断提交。
+用户已确认三功能完整版、免费、中国大陆、支持邮箱 limingjian.yy@gmail.com、版权 2026 李明健。Apple Developer Program 注册申请正在审核，当前尚无 APP 备案号。材料已准备，滚动截图完整性失败仍阻断提交。
 
 | 材料 | 路径 | 使用方式 |
 | --- | --- | --- |

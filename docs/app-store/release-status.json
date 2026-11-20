@@ -15,8 +15,8 @@
   "pending": [
     {
       "id": "apple-account",
-      "status": "blocked_membership_absent",
-      "reason": "用户确认尚无付费 Apple Developer Program 会员。实际 App Store 导出失败，当前团队无权创建主 App 和控制扩展的发行描述文件。App Store Connect 应用记录和上传待完成。"
+      "status": "enrollment_under_review",
+      "reason": "用户已提交 Apple Developer Program 注册申请，提供截图显示申请审核中。待 Apple 审核生效后核验正式团队、App Store Connect 权限、发行证书及主 App 和控制扩展描述文件。此前正式导出因团队无发行权限失败。"
     },
     {
       "id": "mainland-filing",
@@ -128,9 +128,10 @@
     "simulatorUI": "photo_picker_import_generate_preview_alarm_editor_calendar_help_privacy_passed",
     "deviceInstall": "installed_original_identity_and_backed_up_media_and_rules_verified",
     "deviceAcceptance": "partial_failed_capture_completeness_background_alarm_heard",
-    "captureSubmissionGate": "blocked_duplicate_row_023_missing_row_030",
+    "captureSubmissionGate": "blocked_pending_fixed_build_device_acceptance",
     "publicPages": "current_source_deployed_http200_bytes_match",
-    "distributionSigning": "blocked_paid_membership_absent",
-    "deviceReport": "device-acceptance-2026-11-20.md"
+    "distributionSigning": "blocked_enrollment_under_review",
+    "deviceReport": "device-acceptance-2026-11-20.md",
+    "localCaptureRegression": "83_lossy_native_frames_36_rows_geometry_and_body_and_label_pixels_passed"
   }
 }

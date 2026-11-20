@@ -6,6 +6,42 @@
   "check_timeout_seconds": 900,
   "review_max_age_seconds": 7200,
   "checks": {
+    "capture-completeness": {
+      "argv": [
+        "env",
+        "SCROLLSTITCH_CAPTURE_METRICS=1",
+        "swift",
+        "test",
+        "--scratch-path",
+        ".build/tests",
+        "--cache-path",
+        ".build/cache",
+        "--disable-sandbox",
+        "--filter",
+        "VerticalCardCaptureTests"
+      ],
+      "tier": "critical",
+      "budget": {
+        "workload": {
+          "frames": 83,
+          "rows": 36,
+          "output_pixels": 18885960
+        },
+        "inputs": [],
+        "metrics": {
+          "capture.refinement_windows": {
+            "area": "loops",
+            "unit": "windows",
+            "max": 664
+          },
+          "capture.processing_seconds": {
+            "area": "performance",
+            "unit": "seconds",
+            "max": 180
+          }
+        }
+      }
+    },
     "unit": {
       "argv": [
         "bash",
@@ -91,6 +127,7 @@
   },
   "stage_checks": {
     "review": [
+      "capture-completeness",
       "store-materials",
       "public-tree",
       "unit",

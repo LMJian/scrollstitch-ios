@@ -25,11 +25,14 @@ python3 scripts/check_release.py --mode local --app .build/StoreArchive.xcarchiv
 
 ```sh
 swift test --scratch-path .build/tests --filter CapturePipelineTests
+swift test --scratch-path .build/tests --filter VerticalCardCaptureTests
 swift test --scratch-path .build/tests --filter Workday
 bash scripts/check_holiday_endpoint.sh
 ```
 
 最后一个命令使用生产下载代码读取真实 GitHub Pages 入口，在临时目录缓存并校验年度文件，然后重新打开离线缓存；不修改博客或手机。它需要网络，属于可选在线检查，失败不会被解释为离线功能失败。
+
+`VerticalCardCaptureTests` 使用与本轮真机相同的 1206×2622 帧尺寸，包含 36 张重复布局、不同编号的浅色卡片，以及变速拖动轨迹。通过实际 JPEG 归档和 CapturePipeline，核对输出完整高度、每行原始 RGB 像素和编号区域，避免仅凭状态为 complete 或总高度判定通过。Harness 另记录 83 帧工作负载的精细对齐窗口数与处理耗时预算。末尾画面没有重叠的纵向回归要求返回可恢复失败并保留全部原帧。
 
 `Tools/ScrollReplay` 可回放外部提供的帧目录并比较独立基线；输入不随仓库发布。历史真实素材及作品备份已经移除，默认检查不再引用它们。不要生成“真机通过”收据来替代缺少的设备证据。
 

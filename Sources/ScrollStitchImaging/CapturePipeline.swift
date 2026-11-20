@@ -49,7 +49,7 @@ public struct CapturePipelineOutput:Sendable {
 /// Processes committed screen frames. Native recording never enters a video
 /// decoder, and analysis caches are optional derived data.
 public enum CapturePipeline {
-    public static let recipe = TaskStore.digest(data: Data("screen-frame-stitch-2".utf8))
+    public static let recipe = TaskStore.digest(data: Data("screen-frame-stitch-3".utf8))
     /// Preserve successful result IDs and their Photos ledger, but recompute a
     /// failed attempt even when it was produced by the current algorithm.
     public static func resume(store: TaskStore, taskID: UUID, selectionFingerprint: String,
@@ -155,13 +155,15 @@ public enum CapturePipeline {
             let skipped: Int
             let preparedFrames: Int
             let preparedAlignments: Int
+            let refinedCandidates: Int
             let timings: StitchTimings
             let omittedOccludedBottomRows: Bool
         }
         try captureWriteJSON(Diagnostic(recipe: recipe, positions: engine.positions,
             panels: engine.classifiedPanels.sorted(), accepted: stitched.acceptedFrameCount,
             skipped: stitched.skippedFrameCount, preparedFrames: stitched.preparedFrameCount,
-            preparedAlignments: stitched.preparedAlignmentCount, timings: stitched.timings,
+            preparedAlignments: stitched.preparedAlignmentCount, refinedCandidates: engine.refinedCandidateCount,
+            timings: stitched.timings,
             omittedOccludedBottomRows: stitched.omittedOccludedBottomRows),
             to: directory.appendingPathComponent("capture-analysis.json"))
         let set = CaptureResultSet(taskID: taskID, revision: snapshot.sequence, sourceIdentity: identity,

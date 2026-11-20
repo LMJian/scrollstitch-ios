@@ -376,6 +376,7 @@ enum OverlapEstimator {
         let horizontalStride = max(2, previous.width / 24)
         let verticalStride = overlapHeight > 240 ? 2 : 1
         var movingTileScores: [Double] = []
+        var movingEvidenceScores: [Double] = []
         var comparableTileCount = 0
 
         for top in stride(from: 1, to: overlapHeight - 1, by: tileHeight) {
@@ -426,6 +427,8 @@ enum OverlapEstimator {
                     stationaryEdgeDifference / Double(sampleCount) * 0.28
                 )
 
+                if stationary >= 1.4 { movingEvidenceScores.append(moved) }
+
                 // Viewport-fixed controls match at zero movement; animated
                 // media may match neither position. Only tiles that distinctly
                 // support this displacement get a vote.
@@ -447,7 +450,14 @@ enum OverlapEstimator {
         let mean = kept.reduce(0, +) / Double(keptCount)
         let median = kept[kept.index(kept.startIndex, offsetBy: keptCount / 2)]
         let weakSupportPenalty = max(0, 0.45 - supportRatio) * 10
-        return (mean * 0.68) + (median * 0.32) + weakSupportPenalty
+        let regional = (mean * 0.68) + (median * 0.32) + weakSupportPenalty
+        // Keep sparse identity evidence such as changing row numbers. The
+        // trimmed regional vote alone can discard precisely those differences
+        // and prefer another copy of the repeated card layout.
+        // Fixed toolbars have no stationary change and must not contribute a
+        // penalty merely because translating them crosses into page content.
+        let global = movingEvidenceScores.reduce(0, +) / Double(movingEvidenceScores.count)
+        return regional * 0.80 + global * 0.20
     }
 
     fileprivate static func chooseEstimate(
