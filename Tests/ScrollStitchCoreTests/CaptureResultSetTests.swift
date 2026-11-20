@@ -11,30 +11,125 @@ private actor BatchPhotoWriter:PhotoLibraryWriting {
     func count() -> Int {writes}
 }
 final class CaptureResultSetTests:XCTestCase {
+    private func temporaryRoot() -> URL {
+        let root = FileManager.default.temporaryDirectory.resolvingSymlinksInPath().appendingPathComponent(UUID().uuidString)
+        addTeardownBlock { try? FileManager.default.removeItem(at: root) }
+        return root
+    }
     private func fixture() throws -> (TaskStore,CaptureResultSet) {
-        let root=FileManager.default.temporaryDirectory.resolvingSymlinksInPath().appendingPathComponent(UUID().uuidString)
-        addTeardownBlock { try? FileManager.default.removeItem(at:root) }
-        let store=try TaskStore(root:root)
+        let store=try TaskStore(root:temporaryRoot())
         let (task,owner)=try store.beginCapture()
         try store.finishCapture(taskID:task.taskID,owner:owner,reason:.userStopped)
-        let capture=try store.captureSnapshot(taskID:task.taskID,verifyFiles:false)
+        return (store, try makeResultSet(store: store, taskID: task.taskID, selection: String(repeating: "a", count: 64)))
+    }
+    private func makeResultSet(store: TaskStore, taskID: UUID, selection: String) throws -> CaptureResultSet {
+        let capture=try store.captureSnapshot(taskID:taskID,verifyFiles:false)
         let identity=String(repeating:"a",count:64),recipe=String(repeating:"b",count:64)
         var pages=[CaptureResultPage]()
         for index in 0..<2 {
-            let url=try store.taskDirectory(task.taskID).appendingPathComponent("exports/page-\(index).png")
+            let url=try store.taskDirectory(taskID).appendingPathComponent("exports/page-\(index).png")
             let context=try XCTUnwrap(CGContext(data:nil,width:20,height:30,bitsPerComponent:8,bytesPerRow:80,
                 space:CGColorSpaceCreateDeviceRGB(),bitmapInfo:CGImageAlphaInfo.premultipliedLast.rawValue))
             context.setFillColor(CGColor(red:CGFloat(index),green:0.3,blue:0.6,alpha:1));context.fill(CGRect(x:0,y:0,width:20,height:30))
             let writer=try XCTUnwrap(CGImageDestinationCreateWithURL(url as CFURL,"public.png" as CFString,1,nil))
             CGImageDestinationAddImage(writer,try XCTUnwrap(context.makeImage()),nil);XCTAssertTrue(CGImageDestinationFinalize(writer))
             let data=try Data(contentsOf:url)
-            let result=try ResultManifest(taskID:task.taskID,revision:capture.sequence,
+            let result=try ResultManifest(taskID:taskID,revision:capture.sequence,
                 selectionFingerprint:TaskStore.digest(data:Data("page-\(index)".utf8)),path:AssetPath("exports/page-\(index).png"),
                 format:"png",size:PixelSize(width:20,height:30),sizeBytes:data.count,sha256:TaskStore.digest(data:data))
             pages.append(CaptureResultPage(sourceIdentity:identity,recipe:recipe,document:0,page:index,result:result))
         }
-        return (store,CaptureResultSet(taskID:task.taskID,revision:capture.sequence,sourceIdentity:identity,recipe:recipe,
-            selectionFingerprint:identity,status:.complete,pages:pages,gaps:[]))
+        return CaptureResultSet(taskID:taskID,revision:capture.sequence,sourceIdentity:identity,recipe:recipe,
+            selectionFingerprint:selection,status:.complete,pages:pages,gaps:[])
+    }
+    private func scrollFixture() throws -> (ScrollLibrary, ScrollSession, TaskStore, CaptureResultSet) {
+        let library = try ScrollLibrary(root: temporaryRoot())
+        let (initial, store, owner) = try library.begin(axis: .vertical)
+        var session = initial
+        try store.finishCapture(taskID: session.taskID, owner: owner, reason: .userStopped)
+        for event: ScrollEvent in [.selected, .recordingStarted, .finish, .inputSealed, .reconstructed] {
+            try session.apply(event)
+        }
+        try library.save(session)
+        let set = try makeResultSet(store: store, taskID: session.taskID, selection: session.selectionFingerprint)
+        try store.publishCaptureResultSet(set)
+        let directory = try store.taskDirectory(session.taskID)
+        let output = try set.pages[0].result.path.resolved(in: directory)
+        try FileManager.default.copyItem(at: output, to: directory.appendingPathComponent("assets/sample-frame.png"))
+        return (library, session, store, set)
+    }
+    @MainActor func testSavedCaptureReleasesFilesAndPreservesPhotoLedger() async throws {
+        let (library, initial, store, set) = try scrollFixture()
+        var session = initial
+        let writer = BatchPhotoWriter()
+        let controller = PhotoExportController(writer: writer)
+        let count = await controller.saveAll(store: store, results: set.pages.map(\.result))
+        XCTAssertEqual(count, 2)
+        try library.discardSavedMedia(for: session)
+        XCTAssertEqual(try store.captureResultSet(taskID: session.taskID, selectionFingerprint: session.selectionFingerprint), set)
+
+        try session.apply(.photosSaved(count))
+        try library.save(session)
+        let restoredLibrary = try ScrollLibrary(root: library.root)
+        let restored = try XCTUnwrap(try restoredLibrary.sessions().first)
+        let directory = try store.taskDirectory(session.taskID)
+        let ledgerURL = directory.appendingPathComponent("photo-save-v1.json")
+        let ledger = try Data(contentsOf: ledgerURL)
+
+        do {
+            let access = try store.openResult(taskID: session.taskID, resultID: set.pages[0].result.id)
+            XCTAssertThrowsError(try restoredLibrary.discardSavedMedia(for: restored)) {
+                XCTAssertEqual($0 as? ScrollStitchError, .resourceBusy)
+            }
+            XCTAssertTrue(FileManager.default.fileExists(atPath: access.url.path))
+        }
+        try restoredLibrary.discardSavedMedia(for: restored)
+        XCTAssertNil(try store.captureResultSet(taskID: session.taskID, selectionFingerprint: session.selectionFingerprint))
+        for name in ["assets", "exports", "temporary"] {
+            XCTAssertFalse(FileManager.default.fileExists(atPath: directory.appendingPathComponent(name).path))
+        }
+        XCTAssertEqual(try Data(contentsOf: ledgerURL), ledger)
+        XCTAssertEqual(try restoredLibrary.sessions(), [restored])
+
+        // A restart after publication was retired can still remove leftover media.
+        let remainder = directory.appendingPathComponent("temporary")
+        try FileManager.default.createDirectory(at: remainder, withIntermediateDirectories: false)
+        try Data([1]).write(to: remainder.appendingPathComponent("remaining-frame.jpeg"))
+        try restoredLibrary.discardSavedMedia(for: restored)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: remainder.path))
+        XCTAssertEqual(try Data(contentsOf: ledgerURL), ledger)
+    }
+    func testIncompletePhotoLedgerDoesNotReleaseCaptureMedia() throws {
+        let (library, initial, store, set) = try scrollFixture()
+        var session = initial
+        // Even an older session marked as saved needs a successful record for every page.
+        try session.apply(.photosSaved(2))
+        try library.save(session)
+        let directory = try store.taskDirectory(session.taskID)
+        let ledgerURL = directory.appendingPathComponent("photo-save-v1.json")
+        do {
+            let access = try store.openResult(taskID: session.taskID, resultID: set.pages[0].result.id)
+            let intent = try store.beginPhotoSave(access)
+            try store.finishPhotoSave(access, operationID: intent.operationID, success: true)
+        }
+        try library.discardSavedMedia(for: session)
+        XCTAssertEqual(try store.captureResultSet(taskID: session.taskID, selectionFingerprint: session.selectionFingerprint), set)
+        do {
+            let access = try store.openResult(taskID: session.taskID, resultID: set.pages[1].result.id)
+            let intent = try store.beginPhotoSave(access)
+            try store.finishPhotoSave(access, operationID: intent.operationID, success: false)
+        }
+        try library.discardSavedMedia(for: session)
+        XCTAssertEqual(try store.captureResultSet(taskID: session.taskID, selectionFingerprint: session.selectionFingerprint), set)
+        do {
+            let access = try store.openResult(taskID: session.taskID, resultID: set.pages[1].result.id)
+            _ = try store.beginPhotoSave(access)
+        }
+        let ledger = try Data(contentsOf: ledgerURL)
+        try library.discardSavedMedia(for: session)
+        XCTAssertEqual(try store.captureResultSet(taskID: session.taskID, selectionFingerprint: session.selectionFingerprint), set)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: directory.appendingPathComponent("assets/sample-frame.png").path))
+        XCTAssertEqual(try Data(contentsOf: ledgerURL), ledger)
     }
     func testEveryPageRestoresAndHasIndependentPhotoIntent() throws {
         let (store,set)=try fixture();try store.publishCaptureResultSet(set)

@@ -35,6 +35,7 @@ public struct ScrollSession: Codable, Equatable, Sendable, Identifiable {
     public private(set) var recordings: [ScrollRecording] = []
     public private(set) var savedPages = 0
     public private(set) var message: String?
+    var selectionFingerprint: String { TaskStore.digest(data: Data(id.uuidString.utf8)) }
     public init(id: UUID = UUID(), taskID: UUID, axis: ScrollAxis, now: Date = Date()) {
         self.id=id; self.taskID=taskID; self.axis=axis; self.createdAt=now
     }
@@ -94,7 +95,7 @@ public struct ScrollSession: Codable, Equatable, Sendable, Identifiable {
     }
 }
 
-/// Each work owns a TaskStore. A new session never clears a previous work.
+/// Each session owns a TaskStore. Only confirmed saves can release their media.
 /// The main app is the sole command executor; the extension only reads snapshots.
 public final class ScrollLibrary: @unchecked Sendable {
     public let root: URL
@@ -105,6 +106,11 @@ public final class ScrollLibrary: @unchecked Sendable {
     }
     public func store(for id: UUID) throws -> TaskStore {
         try TaskStore(root:root.appendingPathComponent(id.uuidString))
+    }
+    func discardSavedMedia(for session: ScrollSession) throws {
+        guard session.phase == .saved else { return }
+        try store(for: session.id).discardSavedCaptureMedia(taskID: session.taskID,
+            selectionFingerprint: session.selectionFingerprint, savedPages: session.savedPages)
     }
     public func sessions() throws -> [ScrollSession] {
         let files=try FileManager.default.contentsOfDirectory(at:root,includingPropertiesForKeys:[.isSymbolicLinkKey])

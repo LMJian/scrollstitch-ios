@@ -31,8 +31,8 @@ struct ScrollCaptureHome:View {
                     VStack(alignment:.leading,spacing:16) {
                         Text("拼接方向").font(.headline)
                         Picker("拼接方向",selection:$capture.axis) {
-                            Text("纵向 ↕").tag(ScrollAxis.vertical)
-                            Text("横向 ↔").tag(ScrollAxis.horizontal)
+                            Text("纵向 ↕️").tag(ScrollAxis.vertical)
+                            Text("横向 ↔️").tag(ScrollAxis.horizontal)
                         }.pickerStyle(.segmented).disabled(capture.active)
                         Text("同一页沿一个方向轴滚动，可往返查看。").font(.footnote).foregroundStyle(.secondary)
                         Toggle("保留状态栏", isOn: $capture.keepsStatusBar).disabled(capture.active)
@@ -50,22 +50,14 @@ struct ScrollCaptureHome:View {
                     if let message=capture.errorMessage {
                         Label(message,systemImage:"exclamationmark.circle").font(.subheadline).foregroundStyle(.secondary)
                     }
-                    if !capture.works.isEmpty {
-                        Text("我的长图").font(.title2.bold())
-                        ForEach(capture.works) { work in
-                            Button {capture.openedWork=work} label: {
-                                HStack(spacing:16) {
-                                    if work.id == capture.session?.id,let thumbnail=capture.latestThumbnail {
-                                        Image(uiImage:thumbnail).resizable().scaledToFill().frame(width:60,height:80).clipped().clipShape(RoundedRectangle(cornerRadius:8)).accessibilityHidden(true)
-                                    } else {ScrollWorkThumbnail(work:work)}
-                                    VStack(alignment:.leading,spacing:6) {
-                                        Text(work.phase == .saved ? "已保存到照片":label(work.phase)).font(.headline)
-                                        Text(work.createdAt,format:.dateTime.month().day().hour().minute()).font(.caption).foregroundStyle(.secondary)
-                                        if work.savedPages>1 {Text("\(work.savedPages) 张图片").font(.caption)}
-                                    }
-                                    Spacer();Image(systemName:"chevron.right")
-                                }.padding(16).background(.background,in:RoundedRectangle(cornerRadius:20))
-                            }.buttonStyle(.plain)
+                    if capture.session?.phase == .saved, capture.errorMessage == nil {
+                        Label("长图已保存，请在「照片」中查看", systemImage: "checkmark.circle")
+                            .font(.subheadline)
+                    }
+                    if !capture.active, !capture.pendingCaptures.isEmpty {
+                        Text("待处理截图").font(.headline)
+                        ForEach(capture.pendingCaptures) { work in
+                            recoveryRow(work)
                         }
                     }
                     Text("全部在本机处理 · 不录制声音").font(.footnote).foregroundStyle(.secondary)
@@ -73,42 +65,30 @@ struct ScrollCaptureHome:View {
                 }.padding(24)
             }.background(Color(uiColor:.systemGroupedBackground))
                 .navigationTitle("卷轴").navigationBarTitleDisplayMode(.inline)
-                .toolbar {ToolbarItem(placement:.topBarTrailing) {Button("使用方法") {guide=true}}}
+                .appHelp()
                 .sheet(isPresented:$guide) {ScrollOnboarding {introduced=true;guide=false}}
-                .sheet(item:$capture.openedWork) {ScrollWorkViewer(work:$0)}
-                .safeAreaInset(edge: .bottom) {
-                    if !capture.active, let thumbnail = capture.latestThumbnail, let work = capture.session, work.phase == .saved {
-                        HStack(spacing: 12) {
-                            Button { capture.openedWork = work; capture.dismissSavedPreview() } label: {
-                                HStack(spacing: 12) {
-                                    Image(uiImage: thumbnail).resizable().scaledToFill()
-                                        .frame(width: 42, height: 54).clipped().clipShape(RoundedRectangle(cornerRadius: 8))
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text("长图已保存").font(.headline)
-                                        Text("轻点查看完整图片").font(.caption).foregroundStyle(.secondary)
-                                    }
-                                }
-                            }.buttonStyle(.plain)
-                            Spacer()
-                            Button("关闭", systemImage: "xmark.circle.fill") { capture.dismissSavedPreview() }
-                                .labelStyle(.iconOnly).foregroundStyle(.secondary)
-                        }.padding(14).background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
-                            .padding(.horizontal, 24).padding(.bottom, 10)
-                    }
-                }
         }
-        .tint(Color.primary)
+        .tint(.blue)
         .task {await capture.recover();if !introduced {guide=true}}
         .onChange(of:scenePhase) {_,phase in if phase == .active {Task {await capture.recover()}}}
     }
-    private func label(_ phase:ScrollPhase)->String {
-        switch phase {
-        case .saved:return "已保存"
-        case .permissionRequired:return "需要照片权限"
-        case .saveUncertain:return "保存结果待确认"
-        case .failed,.interrupted:return "原始素材已保留"
-        default:return "正在处理"
+    private func recoveryRow(_ work: ScrollSession) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(work.createdAt, format: .dateTime.month().day().hour().minute())
+                .font(.caption).foregroundStyle(.secondary)
+            switch work.phase {
+            case .permissionRequired:
+                Text("需要添加照片权限，长图已保留。")
+                Button("重试保存") { Task { await capture.retry(work) } }
+            case .saveUncertain:
+                Text("保存结果待确认，请先查看「照片」。卷轴会保留素材，避免重复写入。")
+            default:
+                Text(work.message ?? "处理未完成，原始素材已保留。")
+                Button("重试自动处理") { Task { await capture.retry(work) } }
+            }
         }
+        .padding(16).frame(maxWidth: .infinity, alignment: .leading)
+        .background(.background, in: RoundedRectangle(cornerRadius: 20))
     }
 }
 
@@ -146,7 +126,7 @@ private struct ScrollOnboarding:View {
                                 GuideStep(number:1,title:"同一方向轴，可往返滚动",detail:"纵向可上下往返，横向可左右往返。卷轴按内容顺序去重。")
                                 GuideStep(number:2,title:"接下一页",detail:"长按灵动岛，点“接下一页”暂停；切换页面后点“继续”。独立的控制中心控件也能直接暂停或继续。")
                                 GuideStep(number:3,title:"到终点，点完成",detail:"长按灵动岛后点“完成”，或再次点击控制中心的“卷轴”。")
-                                GuideStep(number:4,title:"自动保存，轻点查看",detail:"保存后在卷轴内显示缩略图。其他 App 中的完成提醒需要允许通知。")
+                                GuideStep(number:4,title:"自动保存到照片",detail:"完成后打开系统「照片」查看长图。在其他 App 中接收完成提醒需要允许通知。")
                                 Button("允许添加照片") {
                                     Task {let state=await PhotoKitWriter().requestAddOnly();permission=state == .authorized ? "已允许添加照片":"可在系统设置中允许添加照片"}
                                 }.buttonStyle(.bordered)
@@ -199,94 +179,4 @@ private struct ScrollOnboarding:View {
     }
 }
 
-private struct ScrollWorkViewer:View {
-    let work:ScrollSession
-    @ObservedObject private var capture=ScrollCaptureCoordinator.shared
-    @State private var images:[ResultManifest]=[]
-    @State private var image:UIImage?
-    @State private var page=0
-    @State private var message="正在读取长图…"
-    @State private var zoom=0
-    @Environment(\.dismiss) private var dismiss
-    var body:some View {
-        NavigationStack {
-            VStack {
-                if images.count>1 {
-                    HStack {
-                        Button("上一张") {page-=1}.disabled(page==0)
-                        Spacer();Text("\(page+1) / \(images.count)");Spacer()
-                        Button("下一张") {page+=1}.disabled(page+1>=images.count)
-                    }.padding()
-                }
-                if let image {ZoomableResult(image:image,zoomCommand:zoom)}
-                else {ContentUnavailableView(message,systemImage:"photo")}
-                if work.phase == .permissionRequired || work.phase == .failed {
-                    Button(work.phase == .permissionRequired ? "允许添加照片并继续":"重试自动处理") {
-                        Task {await capture.retry(work);dismiss()}
-                    }.buttonStyle(.borderedProminent).disabled(capture.active).padding()
-                }
-                if work.phase == .saveUncertain {
-                    Text("照片写入结果待确认。请先查看相册；卷轴不会自动重复写入。")
-                        .font(.footnote).foregroundStyle(.secondary).padding()
-                }
-            }.navigationTitle("完整长图").navigationBarTitleDisplayMode(.inline)
-                .toolbar {ToolbarItem(placement:.confirmationAction) {Button("关闭") {dismiss()}}}
-                .task(id:page) {
-                    image=nil
-                    message="正在读取长图…"
-                    do {
-                        guard let group=Bundle.main.object(forInfoDictionaryKey:"ScrollStitchAppGroup") as? String,
-                              let root=FileManager.default.containerURL(forSecurityApplicationGroupIdentifier:group) else {throw ScrollStitchError.storageFailure}
-                        let library=try ScrollLibrary(root:root.appendingPathComponent("Library/ScrollStitch/scrolls")),store=try library.store(for:work.id)
-                        guard let result=try store.captureResultSet(taskID:work.taskID,selectionFingerprint:TaskStore.digest(data:Data(work.id.uuidString.utf8))),
-                              result.pages.indices.contains(page) else {message=work.message ?? "原始素材已保留，尚未生成完整长图";return}
-                        guard [.complete,.staticFrame].contains(result.status) else {
-                            message="内容未完整连接，全部原始素材已保留";return
-                        }
-                        images=result.pages.map(\.result)
-                        let access=try await store.openResultForPreview(taskID:work.taskID,resultID:images[page].id)
-                        let decoded=try await Task.detached {
-                            try withExtendedLifetime(access) {try ImageDecoder.normalized(access.url)}
-                        }.value
-                        try Task.checkCancellation()
-                        image=UIImage(cgImage:decoded)
-                    } catch is CancellationError { return
-                    } catch ScrollStitchError.resourceBusy {
-                        message="图片正在使用，请稍后重新打开"
-                    } catch {
-                        message="无法读取成品，原始素材已保留"
-                    }
-                }
-        }
-    }
-}
-
-private struct ScrollWorkThumbnail:View {
-    let work:ScrollSession
-    @State private var image:UIImage?
-    var body:some View {
-        Group {
-            if let image {Image(uiImage:image).resizable().scaledToFill()}
-            else {Image(systemName:"photo.on.rectangle").font(.title)}
-        }.frame(width:60,height:80).clipped().clipShape(RoundedRectangle(cornerRadius:8)).accessibilityHidden(true)
-            .task(id:work.phase) {
-                guard work.phase == .saved,
-                      let group=Bundle.main.object(forInfoDictionaryKey:"ScrollStitchAppGroup") as? String,
-                      let root=FileManager.default.containerURL(forSecurityApplicationGroupIdentifier:group) else {return}
-                do {
-                    let library=try ScrollLibrary(root:root.appendingPathComponent("Library/ScrollStitch/scrolls"))
-                    let store=try library.store(for:work.id)
-                    guard let first=try store.captureResultSet(taskID:work.taskID,
-                        selectionFingerprint:TaskStore.digest(data:Data(work.id.uuidString.utf8)))?.pages.first else {return}
-                    let access=try await store.openResultForPreview(taskID:work.taskID,resultID:first.result.id)
-                    let decoded=try await Task.detached {
-                        try withExtendedLifetime(access) {try ImageDecoder.normalized(access.url,maxDimension:320)}
-                    }.value
-                    try Task.checkCancellation()
-                    image=UIImage(cgImage:decoded)
-                } catch is CancellationError { return
-                } catch {image=nil}
-            }
-    }
-}
 #endif

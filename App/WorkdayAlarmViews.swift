@@ -90,8 +90,9 @@ struct WorkdayAlarmHome: View {
             }
             .background(Color(uiColor: .systemGroupedBackground))
             .navigationTitle("调休闹钟")
+            .appHelp()
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .topBarLeading) {
                     Button { editing = WorkdayAlarmRule() } label: { Image(systemName: "plus") }
                         .accessibilityLabel("添加闹钟").accessibilityIdentifier("alarm.create")
                         .disabled(!model.loaded || model.busy || model.rules.count >= 8)
@@ -308,7 +309,7 @@ private struct WorkdayAlarmPreview: View {
                 }
                 if let error = model.error { Section { Text(error).foregroundStyle(.orange) } }
             }
-        }.navigationTitle("未来安排").navigationBarTitleDisplayMode(.inline)
+        }.navigationTitle("未来安排").navigationBarTitleDisplayMode(.inline).appHelp()
             .confirmationDialog(selectedDay ?? "调整这一天", isPresented: Binding(
                 get: { selectedDay != nil }, set: { if !$0 { selectedDay = nil } }), titleVisibility: .visible) {
                 if let day = selectedDay {
@@ -380,6 +381,6 @@ private struct WorkdayCalendarDataView: View {
                 Text("GitHub Pages 提供静态文件。下载失败时保留已有安排；修订发布后，需要成功检查更新才能应用。")
                     .font(.caption).foregroundStyle(.secondary)
             }
-        }.navigationTitle("年度安排").navigationBarTitleDisplayMode(.inline).tint(.orange)
+        }.navigationTitle("年度安排").navigationBarTitleDisplayMode(.inline).tint(.orange).appHelp()
     }
 }

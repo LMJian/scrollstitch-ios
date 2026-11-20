@@ -40,15 +40,15 @@ def render(root=ROOT):
     privacy += f'<p class="lead">本政策适用于卷轴 iPhone App 的滚动截图、多图拼接与调休闹钟。开发者：李明健。更新日期：{date}。</p>'
     for section in product['sections']:
         privacy += f'<section class="card"><h2>{escape(section["title"])}</h2><p>{escape(section["body"])}</p></section>'
-    privacy += f'''<section class="card"><h2>你的选择与隐私请求</h2><p>可在 iOS 设置中管理录屏、添加照片、通知和闹钟相关权限，在年度安排中关闭自动检查，并在 App 中管理本机作品与闹钟。离线处理不要求注册账号。</p><p>如需了解、纠正或删除你主动发送给开发者的反馈资料，请联系 <a href="mailto:{email}">{email}</a>。本机素材不会自动上传，因此开发者无法在服务器替你读取或删除这些本机文件。处理支持请求后不再主动使用相关资料；法律要求、必要的争议处理和邮件服务备份可能影响最终删除时间。</p></section>
+    privacy += f'''<section class="card"><h2>你的选择与隐私请求</h2><p>可在 iOS 设置中管理录屏、添加照片、通知和闹钟相关权限，在年度安排中关闭自动检查，并在 App 中管理当前拼图与闹钟。离线处理不要求注册账号。</p><p>如需了解、纠正或删除你主动发送给开发者的反馈资料，请联系 <a href="mailto:{email}">{email}</a>。本机素材不会自动上传，因此开发者无法在服务器替你读取或删除这些本机文件。处理支持请求后不再主动使用相关资料；法律要求、必要的争议处理和邮件服务备份可能影响最终删除时间。</p></section>
 <section class="card"><h2>托管服务与政策更新</h2><p>本支持网站及年度 JSON 文件由 GitHub Pages 托管，网络请求可能经过境外服务。GitHub 会为安全目的记录访问者 IP；我们不向年度下载接口附加账号、图片或闹钟内容，也不部署广告、跟踪脚本或分析 Cookie。</p><p>可查阅 <a href="https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages">GitHub Pages 数据收集说明</a>及 <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub 隐私声明</a>。如数据处理方式发生变化，会同步更新 App 内说明和本页，并按适用要求提供提示或征求同意。</p></section>'''
     support = f'''<p class="eyebrow">联系与支持</p><h1>有问题，告诉我。</h1><p class="lead">请说明你在做什么，以及在哪一步遇到问题。卷轴无需注册，图片处理在你的 iPhone 上完成。</p>
 <a class="button" href="mailto:{email}">邮件联系开发者</a><p class="note">李明健 · {email}</p>
 <section class="card"><h2>反馈时提供这些信息</h2><ul><li>卷轴版本、iOS 版本、设备型号。</li><li>所用功能、具体操作步骤、看到的错误提示。</li><li>预期结果与实际结果。若有截图，请先遮挡私人信息。</li></ul><p>无需发送 Apple 账号、密码、身份证件或完整私人录屏。诊断文件仅在你选择生成并分享后发出。</p></section>
-<section class="card"><h2>滚动截图没有保存到相册</h2><p>先在卷轴的作品中查看结果，再检查 iOS 的添加照片权限。若显示“保存结果不确定”，先确认相册中是否已有成品，再决定是否重试。不要重复启动录制来覆盖原作品。</p><p>开始后等待系统共享提示与控制面板收起，再沿同一方向轴缓慢滚动；换页先暂停，切换后继续。受系统保护的内容可能无法截取。</p></section>
+<section class="card"><h2>滚动截图没有保存到相册</h2><p>成品在系统「照片」中查看。若卷轴首页提示需要添加照片权限，请到 iOS 设置允许添加照片，再返回卷轴重试保存。若提示保存结果待确认，请先检查系统「照片」。</p><p>开始后等待系统共享提示与控制面板收起，再沿同一方向轴缓慢滚动，换页先暂停，切换后继续。受系统保护的内容可能无法截取。</p></section>
 <section class="card"><h2>拼图如何调整与导出</h2><p>选择 2–20 张图片后，可调整顺序、裁剪、间距和背景。生成后在预览中保存 PNG/JPEG 或系统分享。超出处理预算时会提示缩小；拒绝相册权限仍可分享。</p></section>
 <section class="card"><h2>闹钟和年度安排</h2><p>所有时间固定为北京时间。法定工作日规则依赖已保存的年度安排；缺少某年的数据时不会推测。可在“年度安排”中查看、手动检查更新或关闭自动检查，网络失败时继续使用已有有效数据。</p><p>最多预排未来 90 天内最近 64 次。请关注实际覆盖日期，在到期前打开卷轴补齐；后台刷新不保证执行。不要隐藏 App 或为它单独设置 Face ID／密码锁，系统可能限制闹钟。已排程的闹钟可离线执行。</p></section>
-<section class="card"><h2>删除和隐私</h2><p>清除当前拼图不会删除相册原图或已导出的成品；删除闹钟会尝试同步移除系统排程。滚动作品目前保留在本机，清理全部本机数据前请先导出所需结果再卸载应用。可在应用内“隐私与数据”或 <a href="privacy.html">隐私政策</a>查看数据流向与联系渠道。</p></section>'''
+<section class="card"><h2>删除和隐私</h2><p>清除当前拼图不会删除相册原图或已导出的成品。删除闹钟会尝试同步移除系统排程。确认滚动截图已保存后，卷轴清理 App 内的图片和采集素材。可在应用内“隐私与数据”或 <a href="privacy.html">隐私政策</a>查看数据流向与联系渠道。</p></section>'''
     home = '''<p class="eyebrow">卷轴 · IPHONE 工具</p><h1>滚过的内容，<br>一张留下。</h1><p class="lead">滚动长截图、多图拼接与调休闹钟。图片在本机处理，日常安排有据可查。</p><p class="tag">iOS 27+ · 免费 · 无需注册 · 正在准备上架</p>
 <section class="card"><h2>滚动截图</h2><p>控制中心开始，确认系统屏幕共享，完成后自动整理成图并保存照片。支持同一方向轴内往返、暂停和接下一页，不录制声音。</p></section>
 <section class="card"><h2>多图拼接</h2><p>选择 2–20 张图片，自由调整顺序、裁剪、间距与背景，预览后保存或分享。</p></section>

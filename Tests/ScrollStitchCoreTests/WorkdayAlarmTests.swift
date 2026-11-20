@@ -215,7 +215,7 @@ private final class TestAlarmSystem: WorkdayAlarmSystem {
     var authorization: WorkdayAlarmAuthorization = .authorized
     var answer: WorkdayAlarmAuthorization = .authorized
     var stored: [UUID: WorkdaySystemAlarm] = [:]
-    var scheduleCalls = 0, requests = 0, cancelCalls = 0
+    var scheduleCalls = 0, requests = 0, cancelCalls = 0, readCalls = 0
     var capacity = 1000
     var failCancel = false, failRead = false, throwAfterWrite = false
     var beforeSchedule: (() throws -> Void)?
@@ -223,6 +223,7 @@ private final class TestAlarmSystem: WorkdayAlarmSystem {
         requests += 1; authorization = answer; return answer
     }
     func alarms() throws -> [WorkdaySystemAlarm] {
+        readCalls += 1
         if failRead { throw WorkdayError.scheduling("read error") }
         return Array(stored.values)
     }
@@ -242,6 +243,108 @@ private final class TestAlarmSystem: WorkdayAlarmSystem {
 
 @MainActor
 final class WorkdayEngineTests: XCTestCase {
+    private func saturatedEngine(file: URL, system: TestAlarmSystem) async throws -> WorkdayAlarmEngine {
+        system.failRead = true
+        let engine = try WorkdayAlarmEngine(file: file, system: system)
+        var rule = WorkdayAlarmRule(hour: 9, mode: .everyday)
+        for revision in 0..<16 {
+            rule.label = "名称 \(revision)"
+            _ = try await engine.reconcile(rules: [rule], datasets: [:], now: date("2026-11-20"))
+        }
+        XCTAssertEqual(engine.state.owned.count, 1024)
+        return engine
+    }
+
+    func testFullJournalRecoversAcrossDayAndRestartWithoutDuplicateSchedules() async throws {
+        let root = try temporaryRoot(); defer { try? FileManager.default.removeItem(at: root) }
+        let file = root.appendingPathComponent("state"), system = TestAlarmSystem()
+        let engine = try await saturatedEngine(file: file, system: system)
+        let peakBytes = try Data(contentsOf: file).count
+        let tomorrow = date("2026-11-21")
+        let desired = try WorkdayPlanner.plan(rules: engine.state.rules, datasets: [:], now: tomorrow).occurrences
+        let desiredIDs = Set(desired.map(\.id))
+        let oldID = try XCTUnwrap(engine.state.owned.first { !desiredIDs.contains($0.id) }?.id)
+        let foreignID = UUID()
+        system.stored[oldID] = WorkdaySystemAlarm(id: oldID)
+        system.stored[foreignID] = WorkdaySystemAlarm(id: foreignID)
+        system.failRead = false
+        let readsBefore = system.readCalls
+        let restored = try WorkdayAlarmEngine(file: file, system: system)
+        var preparedStateBytes = 0
+        system.beforeSchedule = {
+            let savedBytes = try Data(contentsOf: file)
+            preparedStateBytes = max(preparedStateBytes, savedBytes.count)
+            let saved = try JSONDecoder().decode(WorkdayAlarmEngine.State.self, from: savedBytes)
+            XCTAssertTrue(desiredIDs.isSubset(of: Set(saved.owned.map(\.id))))
+        }
+        let report = try await restored.reconcile(datasets: [:], now: tomorrow)
+        XCTAssertEqual(Set(report.confirmed.map(\.id)), desiredIDs)
+        XCTAssertTrue(report.issues.isEmpty)
+        XCTAssertEqual(system.readCalls - readsBefore, 2)
+        XCTAssertEqual(system.scheduleCalls, 64)
+        XCTAssertEqual(system.cancelCalls, 1)
+        XCTAssertEqual(Set(system.stored.keys), desiredIDs.union([foreignID]))
+        XCTAssertEqual(Set(restored.state.owned.map(\.id)), desiredIDs)
+        let recoveryWriteBytes = preparedStateBytes + (try Data(contentsOf: file).count)
+
+        let writesBeforeRetry = system.scheduleCalls
+        _ = try await restored.reconcile(datasets: [:], now: tomorrow)
+        let restarted = try WorkdayAlarmEngine(file: file, system: system)
+        _ = try await restarted.reconcile(datasets: [:], now: tomorrow)
+        XCTAssertEqual(system.scheduleCalls, 64)
+        XCTAssertEqual(Set(restarted.state.owned.map(\.id)), desiredIDs)
+        XCTAssertNotNil(system.stored[foreignID])
+        if let metricsPath = ProcessInfo.processInfo.environment["HARNESS_METRICS_FILE"] {
+            let metrics: [String: Any] = [
+                "workload": ["historical_owners": 1024, "future_alarms": 64, "reconciliations": 3],
+                "measurements": [
+                    "system.reads": ["value": system.readCalls - readsBefore, "unit": "calls"],
+                    "recovery.write_bytes": ["value": recoveryWriteBytes, "unit": "bytes"],
+                    "retry.schedules": ["value": system.scheduleCalls - writesBeforeRetry, "unit": "calls"],
+                    "system.operations": ["value": system.readCalls - readsBefore + system.scheduleCalls + system.cancelCalls, "unit": "calls"],
+                    "journal.peak_bytes": ["value": peakBytes, "unit": "bytes"],
+                    "journal.retained_owners": ["value": restarted.state.owned.count, "unit": "records"]
+                ]
+            ]
+            try JSONSerialization.data(withJSONObject: metrics, options: [.sortedKeys])
+                .write(to: URL(fileURLWithPath: metricsPath), options: .atomic)
+        }
+    }
+
+    func testFullJournalPreservesUnconfirmedOwnershipWhenSystemStillCannotBeRead() async throws {
+        let root = try temporaryRoot(); defer { try? FileManager.default.removeItem(at: root) }
+        let file = root.appendingPathComponent("state"), system = TestAlarmSystem()
+        _ = try await saturatedEngine(file: file, system: system)
+        let saved = try Data(contentsOf: file)
+        let restored = try WorkdayAlarmEngine(file: file, system: system)
+        do {
+            _ = try await restored.reconcile(datasets: [:], now: date("2026-11-21"))
+            XCTFail("An unreadable system must not evict unconfirmed ownership to make room")
+        } catch { XCTAssertTrue(error is WorkdayError) }
+        XCTAssertEqual(try Data(contentsOf: file), saved)
+        XCTAssertEqual(restored.state.owned.count, 1024)
+        XCTAssertEqual(system.scheduleCalls, 0)
+        XCTAssertEqual(system.cancelCalls, 0)
+    }
+
+    func testFullJournalDoesNotEvictOwnershipThatIsStillPresentInSystem() async throws {
+        let root = try temporaryRoot(); defer { try? FileManager.default.removeItem(at: root) }
+        let file = root.appendingPathComponent("state"), system = TestAlarmSystem()
+        let engine = try await saturatedEngine(file: file, system: system)
+        for occurrence in engine.state.owned { system.stored[occurrence.id] = WorkdaySystemAlarm(id: occurrence.id) }
+        system.failRead = false
+        let readsBefore = system.readCalls
+        let saved = try Data(contentsOf: file)
+        do {
+            _ = try await engine.reconcile(datasets: [:], now: date("2026-11-21"))
+            XCTFail("Live ownership must continue to count toward the journal limit")
+        } catch { XCTAssertTrue(error is WorkdayError) }
+        XCTAssertEqual(system.readCalls - readsBefore, 1)
+        XCTAssertEqual(try Data(contentsOf: file), saved)
+        XCTAssertEqual(system.stored.count, 1024)
+        XCTAssertEqual(system.scheduleCalls, 0)
+        XCTAssertEqual(system.cancelCalls, 0)
+    }
     func testDownloadedCorrectionReconcilesBothDayKindsAndSurvivesOfflineRestart() async throws {
         let root = try temporaryRoot(); defer { try? FileManager.default.removeItem(at: root) }
         let original = try HolidayDataset.decode(annualBytes())

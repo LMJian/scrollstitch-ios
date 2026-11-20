@@ -14,7 +14,7 @@
 
 `CapturePipeline` 校验输入和版本，调用 `FrameStitcher`。预处理、重叠估计、水平表格匹配和位置去重共同决定输出；渲染分块受资源预算限制。成功输出写为不可变图片，通过 `CaptureResultSet` 原子发布。重试只复用完整结果，失败结果重新计算。照片保存使用持久化账本，逐张保存，已成功项跳过，不确定项停止。
 
-App Group 下 `Library/ScrollStitch/scrolls/<session>` 为每个滚动作品保存独立 TaskStore。状态可恢复，但系统录制中断不能假装正常封存；没有完整内容时保留可见失败原因。
+App Group 下 `Library/ScrollStitch/scrolls/<session>` 为每次滚动截图保存独立 TaskStore。会话已标记保存、完整结果的每一页都在 Photos 写入账本中确认成功，且账本没有待确认写入时，TaskStore 持有采集与导出锁，归档结果描述并移除本地图片、采集素材和派生缓存。保留会话和写入账本，清理中断后可继续。打开 App 时按同样条件检查旧缓存。系统录制中断、保存失败或记录不足时保留素材。
 
 ## 拼图数据路径
 
@@ -27,6 +27,8 @@ App Group 下 `Library/ScrollStitch/scrolls/<session>` 为每个滚动作品保�
 `WorkdayAlarmService` 负责 App 生命周期和 UI；`WorkdayHolidayStore` 在内置与缓存中逐年选最高有效版本。HTTPS 下载索引及不可变年度文件，完成校验后原子替换缓存；失败保留旧版本。
 
 `WorkdayPlanner` 计算未来 90 天最近 64 个事件。`WorkdayAlarmEngine` 持久化规则和事件所有权，撤销过期配置、调用 `WorkdayAlarmSystem`、回读系统实际状态。原生实现是 `NativeWorkdayAlarmSystem`，测试使用替身。事件使用稳定 ID；停止回调标记消费并补齐未来排程。后台刷新只提供额外补齐机会。
+
+核对前先读取系统排程，仅清理已确认不存在的历史归属，再合并新计划并检查 1024 条上限。读取失败时保留未确认归属。后续取消和补排前仍先持久化归属，操作后再次回读，支持归属达到上限后的跨日恢复。
 
 ## 构建边界
 

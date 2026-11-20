@@ -634,8 +634,8 @@ public final class TaskStore: @unchecked Sendable {
         guard current == access.result else { throw ScrollStitchError.staleOperation }
     }
 
-    private func readCaptureResultSet(_ taskID:UUID) throws -> CaptureResultSet? {
-        let url=try taskDirectory(taskID).appendingPathComponent("result-set-v2.json")
+    private func readCaptureResultSet(_ taskID: UUID, name: String = "result-set-v2.json") throws -> CaptureResultSet? {
+        let url = try AssetPath(name).resolved(in: taskDirectory(taskID))
         guard FileManager.default.fileExists(atPath:url.path) else { return nil }
         let set:CaptureResultSet=try Self.read(url)
         try set.validate()
@@ -673,6 +673,41 @@ public final class TaskStore: @unchecked Sendable {
                 for page in set.pages { try assertResultRevision(page.result);_=try verifyResultFile(page.result) }
                 try fault?(.beforeResultPublish)
                 try Self.write(set,to:taskDirectory(set.taskID).appendingPathComponent("result-set-v2.json"))
+            }
+        }
+    }
+    /// The saved result manifest and ledger survive a partial cleanup. Retiring the
+    /// manifest first makes the result unavailable for preview or export immediately.
+    func discardSavedCaptureMedia(taskID: UUID, selectionFingerprint: String, savedPages: Int) throws {
+        try transaction {
+            let task = try requireCurrent(taskID)
+            guard task.kind == .capture, !task.pendingCleanup else { return }
+            let directory = try taskDirectory(taskID)
+            let manager = FileManager.default
+            let published = try AssetPath("result-set-v2.json").resolved(in: directory)
+            let saved = try AssetPath("saved-result-set-v2.json").resolved(in: directory)
+            let retired = manager.fileExists(atPath: saved.path)
+            guard !retired || !manager.fileExists(atPath: published.path) else {
+                throw ScrollStitchError.corruptData
+            }
+            guard let set = try readCaptureResultSet(taskID, name: retired ? saved.lastPathComponent : published.lastPathComponent),
+                  set.selectionFingerprint == selectionFingerprint, set.readyForPhotoSave,
+                  set.pages.count == savedPages else { return }
+            let capture = try captureSnapshotUnlocked(taskID: taskID, verifyFiles: false)
+            guard capture.phase == .ended, capture.sequence == set.revision else { return }
+            let ledger = try photoLedger(taskID)
+            guard set.pages.allSatisfy({ ledger.records[$0.result.id]?.phase == .saved }),
+                  !ledger.records.values.contains(where: { $0.phase == .writing }) else { return }
+
+            let folders = try ["assets", "exports", "temporary", "recording", "analysis-v2", "Outputs"].map {
+                try AssetPath($0).resolved(in: directory)
+            }.filter { manager.fileExists(atPath: $0.path) }
+            if retired && folders.isEmpty { return }
+            let captureOwner = try FileLease(url: file("capture-owner.lock"), nonblocking: true)
+            let shareOwner = try FileLease(url: file("share-owner.lock"), nonblocking: true)
+            try withExtendedLifetime((captureOwner, shareOwner)) {
+                if !retired { try manager.moveItem(at: published, to: saved) }
+                for folder in folders { try manager.removeItem(at: folder) }
             }
         }
     }

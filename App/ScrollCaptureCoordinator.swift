@@ -11,12 +11,9 @@ import WidgetKit
 @MainActor final class ScrollCaptureCoordinator: NSObject, ObservableObject {
     static let shared = ScrollCaptureCoordinator()
     @Published private(set) var session: ScrollSession?
-    @Published private(set) var works: [ScrollSession] = []
+    @Published private(set) var pendingCaptures: [ScrollSession] = []
     @Published private(set) var message = "从控制中心开始滚动截图"
     @Published private(set) var errorMessage: String?
-    @Published private(set) var latestThumbnail: UIImage?
-    @Published private(set) var latestResults: [ResultManifest] = []
-    @Published var openedWork: ScrollSession?
     @Published var selectedTab = 0
     @Published var axis: ScrollAxis = .vertical {
         didSet { UserDefaults.standard.set(axis.rawValue, forKey: "scroll.axis") }
@@ -37,6 +34,7 @@ import WidgetKit
     private var interrupted = false
     private var pendingFinish = false
     private var operation = false
+    private var cleaningSavedMedia = false
     private let photos = PhotoExportController(writer: PhotoKitWriter())
 
     override private init() {
@@ -60,8 +58,6 @@ import WidgetKit
             self?.owner = nil
             await self?.fail(message)
         }
-        do { if UIApplication.shared.isProtectedDataAvailable { works = try openLibrary().sessions() } }
-        catch { errorMessage = "无法读取作品，现有文件已保留。" }
     }
 
     private func openLibrary() throws -> ScrollLibrary {
@@ -88,7 +84,7 @@ import WidgetKit
             let library = try openLibrary()
             let (value, store, lease) = try library.begin(axis: axis)
             session = value; self.store = store; owner = lease
-            interrupted = false; pendingFinish = false; errorMessage = nil; latestThumbnail = nil; latestResults = []
+            interrupted = false; pendingFinish = false; errorMessage = nil
             let archive = try ScrollFrameArchive(store: store, taskID: value.taskID, owner: lease,
                 options: ScrollCaptureOptions(axis: axis, keepsStatusBar: keepsStatusBar),
                 topCropRatio: ScrollNativeCapture.topCropRatio())
@@ -174,7 +170,7 @@ import WidgetKit
             do {
                 let set=try await Task.detached(priority:.userInitiated) {
                         try await CapturePipeline.resume(store:store,taskID:session.taskID,
-                            selectionFingerprint:TaskStore.digest(data:Data(session.id.uuidString.utf8)),
+                            selectionFingerprint:session.selectionFingerprint,
                             cancelled:{cancellation.isCancelled},
                             progress:{text in Task { @MainActor [weak self] in
                                 await self?.processingProgress(text,sessionID:session.id)
@@ -190,15 +186,16 @@ import WidgetKit
                     requestPermission:UIApplication.shared.applicationState == .active,
                     cancelled:{cancellation.isCancelled})
                 if count==results.count {
-                    try self.transition(.photosSaved(count));self.latestResults=results
+                    try self.transition(.photosSaved(count))
                     self.recordExecution("photos-saved",detail:String(count))
                     ScrollBackground.cancel()
-                    if let first=results.first,
-                       let image=try? await Task.detached(operation:{try ImageDecoder.normalized(first.path.resolved(in:store.taskDirectory(first.taskID)),maxDimension:1600)}).value {
-                        self.latestThumbnail=UIImage(cgImage:image)
-                    }
                     await self.announce("已保存到照片")
                     await self.notifySaved(session:session,count:count)
+                    if let library = self.library, let saved = self.session {
+                        await Task.detached(priority: .utility) {
+                            try? library.discardSavedMedia(for: saved)
+                        }.value
+                    }
                 } else if self.photos.state == .unknown {
                     try self.transition(.uncertainSave);await self.announce("保存结果待确认，未重复写入")
                 } else if self.photos.state == .denied || self.photos.state == .restricted {
@@ -206,7 +203,7 @@ import WidgetKit
                 } else if cancellation.isCancelled {
                     throw ScrollStitchError.cancelled
                 } else {await self.fail("保存未完成，长图已保留。")}
-                self.works=(try? self.library?.sessions()) ?? self.works
+                if let library = self.library { self.refreshPendingCaptures(in: library) }
             } catch ScrollStitchError.cancelled {
                 self.recordExecution("processing-suspended")
                 try? ScrollBackground.enqueue()
@@ -265,8 +262,10 @@ import WidgetKit
         guard UIApplication.shared.isProtectedDataAvailable else {return}
         do {
             let library=try openLibrary()
-            works=try library.sessions()
-            guard var value=works.first(where:{$0.phase.unfinished}) else {
+            let sessions = try library.sessions()
+            refreshPendingCaptures(in: library, from: sessions)
+            cleanPreviouslySavedMedia(sessions, in: library)
+            guard var value=sessions.first(where:{$0.phase.unfinished}) else {
                 for previous in Activity<ScrollActivityAttributes>.activities {
                     await previous.end(nil,dismissalPolicy:.immediate)
                 }
@@ -278,7 +277,7 @@ import WidgetKit
             }
             guard worker == nil, native.idle, owner == nil else { return }
             let store=try library.store(for:value.id)
-            let set=try store.captureResultSet(taskID:value.taskID,selectionFingerprint:TaskStore.digest(data:Data(value.id.uuidString.utf8)))
+            let set=try store.captureResultSet(taskID:value.taskID,selectionFingerprint:value.selectionFingerprint)
             var unknown=false
             for result in set?.pages.map(\.result) ?? [] {
                 let access=try store.openResult(taskID:value.taskID,resultID:result.id)
@@ -287,24 +286,63 @@ import WidgetKit
             value.recover(hasResult:set?.readyForPhotoSave == true,hasUncertainPhotoWrite:unknown)
             try library.save(value);self.session=value;self.store=store
             if value.phase == .processing || value.phase == .saving {launchProcessing()}
-            else {await announce(value.phase == .saveUncertain ? "保存结果待确认，未重复写入":"录制被中断，原始素材已保留")}
+            else {
+                refreshPendingCaptures(in: library)
+                if value.phase == .saveUncertain {
+                    await announce("保存结果待确认，未重复写入")
+                } else {
+                    let text = "录制被中断，原始素材已保留"
+                    errorMessage = text
+                    await announce(text)
+                }
+            }
         } catch {errorMessage="恢复未完成，现有文件已保留。"}
     }
-    func openWork(_ id:UUID) {
-        works=(try? library?.sessions()) ?? works
-        selectedTab=0;openedWork=works.first(where:{$0.id==id})
+    private func cleanPreviouslySavedMedia(_ sessions: [ScrollSession], in library: ScrollLibrary) {
+        guard !cleaningSavedMedia, UIApplication.shared.applicationState == .active else { return }
+        let saved = sessions.filter { $0.phase == .saved }
+        guard !saved.isEmpty else { return }
+        cleaningSavedMedia = true
+        Task {
+            await Task.detached(priority: .utility) {
+                for work in saved { try? library.discardSavedMedia(for: work) }
+            }.value
+            cleaningSavedMedia = false
+        }
     }
-    func dismissSavedPreview() { latestThumbnail = nil }
+    private func refreshPendingCaptures(in library: ScrollLibrary, from sessions: [ScrollSession]? = nil) {
+        guard let sessions = sessions ?? (try? library.sessions()) else { return }
+        pendingCaptures = sessions.filter { work in
+            switch work.phase {
+            case .permissionRequired, .saveUncertain: return true
+            case .failed:
+                guard let store = try? library.store(for: work.id) else { return false }
+                if hasSealedInput(work, in: store) { return true }
+                // Earlier captures may have a complete result but no frame settings file.
+                guard (try? store.captureSnapshot(taskID: work.taskID, verifyFiles: false))?.phase == .ended else {
+                    return false
+                }
+                return (try? store.captureResultSet(taskID: work.taskID,
+                    selectionFingerprint: work.selectionFingerprint))?.readyForPhotoSave == true
+            default: return false
+            }
+        }
+    }
+    private func hasSealedInput(_ work: ScrollSession, in store: TaskStore) -> Bool {
+        guard let directory = try? store.taskDirectory(work.taskID),
+              let data = try? Data(contentsOf: directory.appendingPathComponent("scroll-frames.json")),
+              let input = try? JSONDecoder().decode(ScrollFrameInput.self, from: data) else { return false }
+        return input.complete
+    }
     /// Explicit recovery is available only for a sealed input or completed
     /// result. The durable photo ledger still blocks uncertain writes.
     func retry(_ work:ScrollSession) async {
-        guard !active,worker == nil,let library else {return}
+        guard !operation, !active, worker == nil, let library else { return }
         do {
             let store=try library.store(for:work.id)
             let result=try store.captureResultSet(taskID:work.taskID,
-                selectionFingerprint:TaskStore.digest(data:Data(work.id.uuidString.utf8)))
-            let inputURL=try store.taskDirectory(work.taskID).appendingPathComponent("scroll-frames.json")
-            guard result?.readyForPhotoSave == true || (try? JSONDecoder().decode(ScrollFrameInput.self,from:Data(contentsOf:inputURL)).complete)==true else {
+                selectionFingerprint:work.selectionFingerprint)
+            guard result?.readyForPhotoSave == true || hasSealedInput(work, in: store) else {
                 errorMessage="录制未完整封存，原始素材已保留，可重新开始截图。";return
             }
             guard var value=try library.sessions().first(where:{$0.id==work.id}) else {throw ScrollStitchError.wrongTask}
@@ -352,13 +390,14 @@ import WidgetKit
         guard [.authorized,.provisional,.ephemeral].contains(settings.authorizationStatus),
               UIApplication.shared.applicationState != .active else {return}
         let content=UNMutableNotificationContent()
-        content.title="长图已保存";content.body="点击查看刚刚生成的 \(count) 张图片"
-        content.userInfo=["scrollSession":session.id.uuidString]
+        content.title = "长图已保存"
+        content.body = "已将 \(count) 张图片保存到「照片」，请在「照片」中查看。"
         try? await center.add(UNNotificationRequest(identifier:"scroll.saved."+session.id.uuidString,content:content,trigger:nil))
     }
     private func fail(_ text:String) async {
-        try? transition(.failed(text));errorMessage=text
-        works=(try? library?.sessions()) ?? works
+        if active { try? transition(.failed(text)) }
+        errorMessage = text
+        if let library { refreshPendingCaptures(in: library) }
         await announce(text);endBackground()
     }
 }

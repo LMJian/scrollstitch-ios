@@ -11,7 +11,19 @@
         "bash",
         "scripts/check.sh",
         "unit"
-      ]
+      ],
+      "budget": {
+        "workload": {"historical_owners": 1024, "future_alarms": 64, "reconciliations": 3},
+        "inputs": [],
+        "metrics": {
+          "system.reads": {"area": "io", "unit": "calls", "min": 6, "max": 6},
+          "recovery.write_bytes": {"area": "io", "unit": "bytes", "max": 4194302},
+          "retry.schedules": {"area": "retry", "unit": "calls", "max": 0},
+          "system.operations": {"area": "loops", "unit": "calls", "max": 71},
+          "journal.peak_bytes": {"area": "data_size", "unit": "bytes", "max": 2097151},
+          "journal.retained_owners": {"area": "data_size", "unit": "records", "max": 64}
+        }
+      }
     },
     "config": {
       "argv": [

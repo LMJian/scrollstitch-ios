@@ -1,6 +1,6 @@
 import SwiftUI
 
-private enum CollagePage:Hashable {case editor,result,help}
+private enum CollagePage:Hashable {case editor,result}
 struct CollageWorkspaceView:View {
     @StateObject private var model=PrototypeModel()
     @Environment(\.scenePhase) private var scenePhase
@@ -18,9 +18,9 @@ struct CollageWorkspaceView:View {
     var body:some View {
         NavigationStack(path:$path) {
             home.navigationTitle("多图拼接").navigationBarTitleDisplayMode(.inline)
-                .toolbar {ToolbarItem(placement:.topBarTrailing) {Button("帮助") {path.append(.help)}}}
+                .appHelp()
                 .navigationDestination(for:CollagePage.self) {page in
-                    switch page {case .editor:editor;case .result:resultPage;case .help:help}
+                    switch page {case .editor:editor.appHelp();case .result:resultPage.appHelp()}
                 }
         }
         .sheet(item:$picker) {request in
@@ -78,11 +78,20 @@ struct CollageWorkspaceView:View {
                             Text("原始素材和已有结果继续保留。新滚动截图从控制中心开始。").font(.subheadline).foregroundStyle(.secondary)
                         }
                         Button("清除本次素材",role:.destructive) {confirmClear=true}.disabled(model.operationLocked)
+                        Button("导出诊断信息") { model.exportDiagnostics() }.disabled(model.operationLocked)
                     }.padding(20).background(.background,in:RoundedRectangle(cornerRadius:22))
                 } else {
                     Button("选择图片") {picker=CollagePickerRequest()}.buttonStyle(PrimaryActionStyle()).disabled(!model.storeReady || model.operationLocked)
                 }
                 if model.busy {processingProgress}
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("使用方法").font(.headline)
+                    Text("选择图片后调整顺序、裁剪、间距和背景，再生成并保存拼图。")
+                    Text("未保存作品保留在本机。清除素材需再次确认。")
+                        .font(.footnote).foregroundStyle(.secondary)
+                }
+                .padding(20).frame(maxWidth: .infinity, alignment: .leading)
+                .background(.background, in: RoundedRectangle(cornerRadius: 22))
                 Text("图片在本机处理").font(.footnote).foregroundStyle(.secondary)
             }.padding(24)
         }.background(Color(uiColor:.systemGroupedBackground))
@@ -105,16 +114,6 @@ struct CollageWorkspaceView:View {
         guard model.canEdit,let edit=model.snapshot.edit else {return}
         let limit=replacing == nil ? 20-edit.orderedImports.count:1
         if limit>0 {picker=CollagePickerRequest(taskID:edit.taskID,revision:edit.revision,replacing:replacing,limit:limit)}
-    }
-    private var help:some View {
-        List {
-            Section("使用方法") {
-                Text("选择图片后调整顺序、裁剪、间距和背景，再生成并保存拼图。")
-                Text("未保存作品保留在本机。清除素材需再次确认。")
-            }
-            Section {NavigationLink("隐私与数据") {ProductInformationView()};LabeledContent("版本",value:ProductInformationView.versionLabel)}
-            if model.snapshot.manifest != nil {Section {Button("导出诊断信息") {model.exportDiagnostics()}.disabled(model.operationLocked)}}
-        }.navigationTitle("帮助")
     }
     private var resultPage:some View {
         VStack(spacing:0) {
@@ -168,6 +167,7 @@ struct CollageWorkspaceView:View {
                         Button("分享全部图片",systemImage:"square.and.arrow.up.on.square") { model.shareImage(allPages:true) }
                     }
                     if model.photoState == .saved { Button("再保存一份",systemImage:"square.and.arrow.down") { confirmRepeat=true } }
+                    Button("导出诊断信息") { model.exportDiagnostics() }
                     Button("完成并清除本次素材",systemImage:"trash",role:.destructive) { confirmClear=true }
                 } label:{Image(systemName:"ellipsis").frame(width:44,height:44)}.accessibilityLabel("作品选项").disabled(model.operationLocked)
             }

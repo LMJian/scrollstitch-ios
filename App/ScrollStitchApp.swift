@@ -37,9 +37,11 @@ import SwiftUI
             }
 #else
             TabView(selection: $fallbackTab) {
-                ContentUnavailableView("请在真机使用滚动截图",systemImage:"iphone",
-                    description:Text("模拟器不提供屏幕共享。请使用 iOS 27 或更高版本的 iPhone。"))
-                    .tabItem {Label("滚动截图",systemImage:"viewfinder")}.tag(0)
+                NavigationStack {
+                    ContentUnavailableView("请在真机使用滚动截图",systemImage:"iphone",
+                        description:Text("模拟器不提供屏幕共享。请使用 iOS 27 或更高版本的 iPhone。"))
+                        .navigationTitle("卷轴").navigationBarTitleDisplayMode(.inline).appHelp()
+                }.tabItem {Label("滚动截图",systemImage:"viewfinder")}.tag(0)
                 CollageWorkspaceView().tabItem {Label("多图拼接",systemImage:"photo.on.rectangle.angled")}.tag(1)
                 WorkdayAlarmHome(isActive: fallbackTab == 2).tabItem {Label("调休闹钟",systemImage:"alarm")}.tag(2)
             }

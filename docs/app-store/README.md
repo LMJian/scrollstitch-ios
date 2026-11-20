@@ -12,9 +12,15 @@
 | 北京备案准备 | [filing-preparation.md](filing-preparation.md) | 个人主体、当前域名缺口、可直接使用的服务说明和静态文件迁移顺序 |
 | 验收 | [acceptance.md](acceptance.md) | 区分本地验证、模拟器和真机结果 |
 | 本轮真机记录 | [device-acceptance-2026-10-27.md](device-acceptance-2026-10-27.md) | 记录修复版成品、相册读回、响铃、蜂窝与异常恢复结果 |
-| 网站页面 | [介绍](https://lmjian.github.io/apps/scrollstitch/)、[支持](https://lmjian.github.io/apps/scrollstitch/support.html)、[隐私](https://lmjian.github.io/apps/scrollstitch/privacy.html) | 已部署并验证，无 JS、分析或外部字体；源文件保存在 site/ |
-| 截图交付 | [screenshots.md](screenshots.md) | 已整理 10 张真实截图（6 张模拟器、4 张真机），均为自有素材；另记录最新修复的真机验证结果 |
+| 网站页面 | [介绍](https://lmjian.github.io/apps/scrollstitch/)、[支持](https://lmjian.github.io/apps/scrollstitch/support.html)、[隐私](https://lmjian.github.io/apps/scrollstitch/privacy.html) | 有历史部署记录，当前更新待部署回读。无 JS、分析或外部字体，源文件保存在 site/ |
+| 截图交付 | [screenshots.md](screenshots.md) | 本轮准备 8 张 1320×2868 RGB 原始模拟器截图，使用自制素材。旧截图保留历史来源 |
 | 剩余状态 | [release-status.json](release-status.json) | 未完成事项保持 pending，不使用虚构的备案号/审核回执 |
+
+## 2026-11-20 更新
+
+当前材料沿用免费、中国大陆、iPhone / iOS 27+、1.0.0（1）。已更新商品描述和审核导航，补充当前 Store 界面的 8 张原始大屏截图。新截图通过真实照片选择器导入三张自制图片并生成拼图，覆盖拼图、闹钟、年度安排及 App 信息。滚动截图的模拟器限制页已排除，当前真机截图和完整系统行为仍待验收。
+
+当前交接顺序见 [提交清单](submission-checklist.md)。站点有历史发布记录，本轮公开隐私页读取超时，当前 `site/` 改动仍需部署和回读核对。下面的网站部署结果及 2026-10-27 验收记录保留其历史来源。
 
 ## 本地检查与正式候选包
 

@@ -84,20 +84,24 @@ public final class WorkdayAlarmEngine {
         let desired = plan.occurrences.filter { !state.completed.contains($0.id) }
         let desiredIDs = Set(desired.map(\.id))
         let oldOwned = Dictionary(uniqueKeysWithValues: state.owned.map { ($0.id, $0) })
+
+        var issues = [String](), actual = [WorkdaySystemAlarm]()
+        var initialReadSucceeded = false
+        do { actual = try system.alarms(); initialReadSucceeded = true }
+        catch { issues.append("无法读取系统闹钟：\(error.localizedDescription)") }
+
+        // Make room only for ownership the system has confirmed absent. This
+        // read must precede the limit so a full journal can recover across days.
+        let actualIDs = Set(actual.map(\.id))
+        var journal = initialReadSucceeded ? oldOwned.filter { actualIDs.contains($0.key) } : oldOwned
         var next = state
         next.rules = rules
-        var journal = oldOwned
         for item in desired { journal[item.id] = item }
         guard journal.count <= 1024 else {
             throw WorkdayError.scheduling("有过多系统状态尚未确认，请先重试核对，再修改闹钟。")
         }
         next.owned = Array(journal.values)
         try WorkdayPersistence.write(next, to: file); state = next
-
-        var issues = [String](), actual = [WorkdaySystemAlarm]()
-        var initialReadSucceeded = false
-        do { actual = try system.alarms(); initialReadSucceeded = true }
-        catch { issues.append("无法读取系统闹钟：\(error.localizedDescription)") }
 
         let enabledRules = Set(rules.filter(\.enabled).map(\.id))
         let retainedRinging = Set(actual.filter {
