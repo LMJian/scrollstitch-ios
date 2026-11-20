@@ -31,7 +31,7 @@
 
 审核现场响铃可创建“每天”的短时规则；法定休息日跳过和周末补班规则可在年度数据中查看。不要通过更改整个设备日期制造假验证。测试结束后删除测试闹钟。请勿将 App 隐藏或设置单独 Face ID／密码锁，系统可能限制此类 App 的闹钟。
 
-年度文件为公开 HTTPS JSON，数据来源记录在每个年度文件中；客户端校验版本及 SHA-256，失败继续使用已有有效数据。下载只更新日历数据，不下载执行代码或改变 App 功能。GitHub Pages 可能记录必要的请求日志，隐私政策有说明。
+年度更新可手动触发，也可在开启自动检查且满足间隔条件时触发。年度文件为公开 HTTPS JSON，数据来源记录在每个年度文件中；客户端校验版本及 SHA-256，失败继续使用已有有效数据。下载只更新日历数据，不下载执行代码或改变 App 功能。GitHub Pages 可能记录必要的请求日志，隐私政策有说明。
 
 ## English review notes
 
@@ -45,4 +45,4 @@ For collages, select 2–20 images through the system photo picker, edit their o
 
 For alarms, create a rule on the alarm tab and allow AlarmKit. To observe an immediate alert, use a daily rule a few minutes in the future, then remove it after testing. The holiday data screen shows bundled years and provides a manual update action. All alarm times use Asia/Shanghai, even while traveling. The app schedules up to the next 64 occurrences within a 90-day horizon, displays the system-confirmed coverage, and attempts replenishment when reopened, after stopping an alarm, and during permitted background refresh. It does not promise indefinite offline replenishment. Missing calendar years are shown instead of inferred. Hiding or locking the app may prevent system alarms.
 
-Holiday updates contain JSON data only, with version and hash verification. They do not deliver executable code. Existing valid data remains usable if a request fails. GitHub Pages may retain network request information for security, as disclosed in the privacy policy.
+Holiday updates can be requested manually or checked automatically when enabled and the check interval has elapsed. They contain JSON data only, with version and hash verification. They do not deliver executable code. Existing valid data remains usable if a request fails. GitHub Pages may retain network request information for security, as disclosed in the privacy policy.

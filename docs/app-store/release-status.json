@@ -18,17 +18,22 @@
     {
       "id": "apple-account",
       "status": "enrollment_under_review",
-      "reason": "用户已提交 Apple Developer Program 注册申请，提供截图显示申请审核中。待 Apple 审核生效后核验正式团队、App Store Connect 权限、发行证书及主 App 和控制扩展描述文件。此前正式导出因团队无发行权限失败。"
+      "reason": "用户已提交 Apple Developer Program 注册申请，提供截图显示申请审核中。待 Apple 审核生效后核验正式团队、App Store Connect 权限、发行证书及主 App 和控制扩展描述文件。此前正式导出因团队无发行权限失败。 本轮浏览器连接两次超时，未能刷新官方账户状态。"
     },
     {
       "id": "mainland-filing",
-      "status": "requires_owner",
-      "reason": "用户确认无本人实名域名或 APP 备案号。北京个人主体准备材料已提供，实际接入与正式签名资料待办，尚未申报。GitHub Pages 的支持和隐私 URL 不构成备案号。"
+      "status": "applicability_pending",
+      "reason": "用户明确定位为纯单机工具，无自建后端。当前实现包含 GitHub Pages 年度 JSON 下载。先向 Apple 核实这一实际功能组合的备案要求，必要时咨询北京市通信管理局，再决定是否办理。域名及云资源采购、静态文件迁移均待适用性确认及用户决定。当前尚未申报或取得备案号。"
     },
     {
       "id": "privacy-label",
-      "status": "answers_prepared",
-      "reason": "逐项答案与源码/托管政策已核对；正式接入服务确定后复核日志用途、身份关联及分类，再由提交人填入 App Store Connect。"
+      "status": "ready_for_entry_current_hosting",
+      "reason": "已按当前 GitHub Pages 托管及自动/手动年度 JSON 下载定稿准备答案，保留安全日志与主动客服反馈的保守披露判断。尚未在 App Store Connect 填入或获 Apple 接受，托管方案变化时复核。"
+    },
+    {
+      "id": "apple-filing-consultation",
+      "status": "blocked_browser_transport",
+      "reason": "备案适用性咨询稿已准备，用户已授权官方网页检查、提交咨询和填写草稿。本轮创建官方支持网页及浏览器状态查询均超时，尚未发送咨询、产生工单或取得答复。"
     }
   ],
   "completed": [
