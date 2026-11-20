@@ -17,8 +17,8 @@
   "pending": [
     {
       "id": "apple-account",
-      "status": "enrollment_under_review",
-      "reason": "用户已提交 Apple Developer Program 注册申请，提供截图显示申请审核中。待 Apple 审核生效后核验正式团队、App Store Connect 权限、发行证书及主 App 和控制扩展描述文件。此前正式导出因团队无发行权限失败。 本轮浏览器连接两次超时，未能刷新官方账户状态。"
+      "status": "payment_confirmed_access_not_enabled",
+      "reason": "用户确认 Apple Developer Program 会员费用已付款成功且有订单收据。已登录官网核对，账户页仍显示购买会员资格和购买处理可能最多需48小时的提示；尚未确认会员生效。App Store Connect 官方页面明确提示账户尚未启用 iTunes Connect，当前无法创建应用记录或填写草稿。正式签名及上传仍待权限生效。"
     },
     {
       "id": "mainland-filing",
@@ -32,8 +32,8 @@
     },
     {
       "id": "apple-filing-consultation",
-      "status": "blocked_browser_transport",
-      "reason": "备案适用性咨询稿已准备，用户已授权官方网页检查、提交咨询和填写草稿。本轮创建官方支持网页及浏览器状态查询均超时，尚未发送咨询、产生工单或取得答复。"
+      "status": "submitted_awaiting_reply",
+      "reason": "已通过已登录的 Apple 官方支持页面，在分发主题提交本地工具加 GitHub 年度 JSON 下载的备案适用性咨询。官方显示感谢联系、已分配案例ID并将审阅回复。回执及发送原文仅私有保存，尚未取得适用性结论。"
     }
   ],
   "completed": [
