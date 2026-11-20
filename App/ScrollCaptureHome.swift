@@ -125,7 +125,7 @@ private struct ScrollOnboarding:View {
                             } else {
                                 GuideStep(number:1,title:"同一方向轴，可往返滚动",detail:"纵向可上下往返，横向可左右往返。卷轴按内容顺序去重。")
                                 GuideStep(number:2,title:"接下一页",detail:"长按灵动岛，点“接下一页”暂停；切换页面后点“继续”。独立的控制中心控件也能直接暂停或继续。")
-                                GuideStep(number:3,title:"到终点，点完成",detail:"长按灵动岛后点“完成”，或再次点击控制中心的“卷轴”。")
+                                GuideStep(number:3,title:"到终点，点完成",detail:"点击或展开灵动岛中的卷轴实时活动，点“完成”。卷轴会自动整理并保存到系统「照片」。")
                                 GuideStep(number:4,title:"自动保存到照片",detail:"完成后打开系统「照片」查看长图。在其他 App 中接收完成提醒需要允许通知。")
                                 Button("允许添加照片") {
                                     Task {let state=await PhotoKitWriter().requestAddOnly();permission=state == .authorized ? "已允许添加照片":"可在系统设置中允许添加照片"}

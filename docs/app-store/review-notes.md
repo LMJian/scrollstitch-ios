@@ -1,6 +1,6 @@
 # App Review 说明
 
-这是待填写到 App Store Connect 的审核说明。审核电话已私有保存，提交时补入 App Store Connect；支持与隐私网址有历史发布记录；当前站点源码更新后需重新部署并回读核对。当前尚未上传构建，也没有 Apple 审核结论。
+这是待填写到 App Store Connect 的审核说明。审核电话已私有保存，提交时补入 App Store Connect。当前支持与隐私页面已部署并回读核对。Apple Developer Program 注册申请正在审核，正式上传及 Apple 审核待完成。
 
 ## 中文说明
 
@@ -14,7 +14,7 @@
 2. 将“卷轴”和“卷轴 · 接下一页”添加到控制中心。
 3. 打开可供测试的自有网页或其他有权截取的内容，停在起点，从控制中心点“卷轴”。
 4. 在 Apple 系统面板确认共享整个屏幕，等待系统提示和控制面板收起后，保持同一方向轴缓慢滚动。
-5. 需要换页时用“接下一页”暂停，切换页面后继续。完成时使用灵动岛操作或再次点击控制中心“卷轴”。
+5. 需要换页时用“接下一页”暂停，切换页面后继续。到达终点后，点击或展开灵动岛中的卷轴实时活动，点击“完成”。
 6. App 在本机自动拼接并保存到系统「照片」，成品在「照片」中查看。确认全部图片已保存后，App 清理本地图片和采集素材。权限被拒绝时可在滚动截图首页重试，写入结果待确认时 App 保留素材并提示检查系统「照片」。
 
 使用 ScreenCaptureKit 的系统授权流程，录制期间系统显示录屏指示。仅处理画面，不采集或保存音频，不规避受保护内容或系统限制。录屏素材不上传服务器。后台模式用于正在进行的屏幕采集、完成本地处理和系统允许的任务调度。
@@ -39,7 +39,7 @@ ScrollStitch (卷轴) is a free iPhone utility for scrolling screenshots, image 
 
 The three tabs are Scrolling Capture (滚动截图), Collage (多图拼接), and Workday Alarms (调休闹钟). The submission includes all three features and a WidgetKit control extension; internal operator tools are disabled.
 
-For scrolling capture, follow the in-app guide to add the 卷轴 and next-page controls to Control Center. Open content you are permitted to capture, tap the capture control, and accept Apple's system screen-sharing prompt. Wait for the system overlays to dismiss before scrolling on one axis. Use the next-page control to pause/resume across pages. Finish using the Live Activity controls or the capture control again. Images are reconstructed locally and added to Photos with permission. The app never records audio or uploads captured content. It does not bypass protected content or system recording restrictions.
+For scrolling capture, follow the in-app guide to add the 卷轴 and next-page controls to Control Center. Open content you are permitted to capture, tap the capture control, and accept Apple's system screen-sharing prompt. Wait for the system overlays to dismiss before scrolling on one axis. Use the next-page control to pause/resume across pages. Tap or expand ScrollStitch's Live Activity in the Dynamic Island, then tap Finish. Images are reconstructed locally and added to Photos with permission. The app never records audio or uploads captured content. It does not bypass protected content or system recording restrictions.
 
 For collages, select 2–20 images through the system photo picker, edit their order/crop/spacing/background, generate a result, then save or share it. Only selected images are read; saving uses add-only Photos permission.
 
