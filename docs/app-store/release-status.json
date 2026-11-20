@@ -10,7 +10,9 @@
     ],
     "supportEmail": "limingjian.yy@gmail.com",
     "copyright": "2026 李明健",
-    "gui": "本轮授权模拟器截图、真机自制素材验收及临时 XCTest；手机自动化已结束。"
+    "gui": "本轮授权模拟器截图、真机自制素材验收及临时 XCTest；手机自动化已结束。",
+    "captureWorkflow": "目标内容起点 → 控制中心开始 → 系统确认全屏共享 → 滚动 → 灵动岛完成 → 自动保存到照片 → 相册查看",
+    "deviceValidation": "用户确认上述主流程使用正常，要求停止其他结束路径的适配与反复真机测试。后续具体缺陷先在 Mac 用留存输入复现和回归。"
   },
   "pending": [
     {
@@ -27,11 +29,6 @@
       "id": "privacy-label",
       "status": "answers_prepared",
       "reason": "逐项答案与源码/托管政策已核对；正式接入服务确定后复核日志用途、身份关联及分类，再由提交人填入 App Store Connect。"
-    },
-    {
-      "id": "current-device-acceptance",
-      "status": "partial_failed",
-      "reason": "当前源码 6256d89 的真机 Photos 写入与摘要读回成功，但成品 ROW 023 重复、ROW 030 缺失，完整性失败并阻断提交。14:09 后台响铃由用户确认听到，测试规则已删除。跨日恢复、离线及专注场景待补。"
     }
   ],
   "completed": [
@@ -112,11 +109,23 @@
       "id": "current-device-cleanup",
       "status": "verified_with_retained_test_photo",
       "verification": "临时控制中心按钮已移除，临时素材 App 和 XCTest Runner 卸载后回读无残留。方向恢复横向、保留状态栏开启。自制失败长图留在 Photos 供复核，备份保留。"
+    },
+    {
+      "id": "capture-alignment-local-fix",
+      "status": "verified_locally",
+      "commit": "ff9b277",
+      "verification": "重复卡片的竞争位移候选经精细像素排序，83 帧、36 行的完整高度、逐行 RGB 及编号区域回归通过。开头恢复跨越无法匹配的过渡帧，原失败用例由 912 像素恢复为预期 1072 像素。"
+    },
+    {
+      "id": "primary-capture-workflow",
+      "status": "confirmed_by_owner",
+      "verification": "用户明确确认自己使用控制中心开始、灵动岛停止的流程没有问题。此处记录用户实际使用确认，未声称本轮代理已重新执行该主流程的完整真机自动化。"
     }
   ],
   "handoffNotes": [
     "此前 VPN 未能恢复；本轮开始和结束均为关闭状态，已告知用户可手动开启。",
-    "当前真机验收保持原有网络、静音与专注设置，未据此复用历史网络或恢复结论。相册保留一张自制失败长图，已告知用户。"
+    "当前真机验收保持原有网络、静音与专注设置，未据此复用历史网络或恢复结论。相册保留一张自制失败长图，已告知用户。",
+    "2026-11-20 用户明确限定主流程，已写入 AGENTS.md。禁止擅自扩展结束路径、因上架重复要求已确认测试，或自行延长手机占用。"
   ],
   "currentPreparation": {
     "date": "2026-11-20",
@@ -127,11 +136,19 @@
     "storeSubmission": "not_submitted",
     "simulatorUI": "photo_picker_import_generate_preview_alarm_editor_calendar_help_privacy_passed",
     "deviceInstall": "installed_original_identity_and_backed_up_media_and_rules_verified",
-    "deviceAcceptance": "partial_failed_capture_completeness_background_alarm_heard",
-    "captureSubmissionGate": "blocked_pending_fixed_build_device_acceptance",
+    "deviceAcceptance": "owner_primary_workflow_confirmation_recorded_agent_alternate_route_excluded",
+    "captureSubmissionGate": "local_regressions_passed_primary_workflow_confirmed_by_owner",
     "publicPages": "current_source_deployed_http200_bytes_match",
     "distributionSigning": "blocked_enrollment_under_review",
     "deviceReport": "device-acceptance-2026-11-20.md",
-    "localCaptureRegression": "83_lossy_native_frames_36_rows_geometry_and_body_and_label_pixels_passed"
-  }
+    "localCaptureRegression": "83_lossy_native_frames_36_rows_geometry_and_body_and_label_pixels_passed",
+    "primaryWorkflow": "control_center_start_dynamic_island_finish"
+  },
+  "excludedByOwner": [
+    {
+      "scope": "再次打开控制中心停止、其他结束方式及据此扩展的测试矩阵",
+      "authorization": "不需要支持很多方式，选最容易的方式就行，我测试点灵动岛停止就没问题；给你写清楚操作路径。",
+      "reason": "代理此前擅自扩展了结束路径。按用户要求从当前验收与阻塞清单排除，保留其历史诊断结果。"
+    }
+  ]
 }
