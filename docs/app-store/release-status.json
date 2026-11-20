@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "asOf": "2026-11-20",
-  "scope": "current source preparation and local delivery; historical acceptance retained separately",
+  "scope": "current Store preparation with build-specific acceptance; historical results retained separately",
   "decisions": {
     "edition": "full",
     "price": "free",
@@ -10,18 +10,18 @@
     ],
     "supportEmail": "limingjian.yy@gmail.com",
     "copyright": "2026 李明健",
-    "gui": "本轮授权独立模拟器和临时 XCTest 操作与截图；真机授权覆盖安装与 CLI 容器核验。"
+    "gui": "本轮授权模拟器截图、真机自制素材验收及临时 XCTest；手机自动化已结束。"
   },
   "pending": [
     {
       "id": "apple-account",
-      "status": "requires_owner_confirmation",
-      "reason": "当前开发签名可用于已有 iPhone 安装；付费开发者计划、App Store Connect 应用记录、正式分发签名及上传权限尚未在本轮核验。"
+      "status": "blocked_membership_absent",
+      "reason": "用户确认尚无付费 Apple Developer Program 会员。实际 App Store 导出失败，当前团队无权创建主 App 和控制扩展的发行描述文件。App Store Connect 应用记录和上传待完成。"
     },
     {
       "id": "mainland-filing",
       "status": "requires_owner",
-      "reason": "北京市个人主体材料已准备；暂无本人实名域名，需选定有备案资格的实际接入服务并取得正式发行签名，未申报。"
+      "reason": "用户确认无本人实名域名或 APP 备案号。北京个人主体准备材料已提供，实际接入与正式签名资料待办，尚未申报。GitHub Pages 的支持和隐私 URL 不构成备案号。"
     },
     {
       "id": "privacy-label",
@@ -29,14 +29,9 @@
       "reason": "逐项答案与源码/托管政策已核对；正式接入服务确定后复核日志用途、身份关联及分类，再由提交人填入 App Store Connect。"
     },
     {
-      "id": "current-public-pages",
-      "status": "requires_deployment_and_readback",
-      "reason": "本轮更新了站点源码。2026-11-20 公开隐私页请求超时，替代读取也失败，当前在线内容未能确认。需部署当前 site/ 并核对公开正文。"
-    },
-    {
       "id": "current-device-acceptance",
-      "status": "pending",
-      "reason": "本轮完成覆盖安装、安装前备份与容器核验。历史真机测试早于当前界面和排程恢复修复，当前完整滚动截图、相册写入、AlarmKit 恢复与响铃待验收。"
+      "status": "partial_failed",
+      "reason": "当前源码 6256d89 的真机 Photos 写入与摘要读回成功，但成品 ROW 023 重复、ROW 030 缺失，完整性失败并阻断提交。14:09 后台响铃由用户确认听到，测试规则已删除。跨日恢复、离线及专注场景待补。"
     }
   ],
   "completed": [
@@ -93,10 +88,35 @@
       "id": "device-cleanup",
       "status": "verified",
       "verification": "临时 App 和 UI 驱动已卸载，无新增闹钟或控制。原有 09:00 规则、47 个排程与 11 份作品保留，另留两条异常验收记录。网络前后均为 Wi-Fi 未连接/VPN 关闭，截图方向为横向。"
+    },
+    {
+      "id": "current-source-push",
+      "status": "pushed_and_verified",
+      "commit": "6256d89c79da64412db3ef9e89feda1701a69873",
+      "verification": "origin/main 已读回与该业务源码提交一致。"
+    },
+    {
+      "id": "current-public-pages",
+      "status": "published_and_verified",
+      "commit": "e114bd81a511bd24c9837b70815c81d5bbced380",
+      "deployment": "https://github.com/LMJian/LMJian.github.io/actions/runs/44683479856",
+      "verification": "本轮更新隐私和支持 HTML，Pages 部署成功，介绍、隐私、支持三个 URL HTTP 200 且正文与当前生成源码逐字节一致。"
+    },
+    {
+      "id": "current-background-alarm",
+      "status": "heard_confirmed_by_owner",
+      "appBuildCommit": "6256d89c79da64412db3ef9e89feda1701a69873",
+      "verification": "系统确认当天北京时间 14:09 排程，卷轴在后台，用户确认听到铃声。测试规则及拥有记录已删除，原 09:00 规则语义不变，共 29 个拥有记录。"
+    },
+    {
+      "id": "current-device-cleanup",
+      "status": "verified_with_retained_test_photo",
+      "verification": "临时控制中心按钮已移除，临时素材 App 和 XCTest Runner 卸载后回读无残留。方向恢复横向、保留状态栏开启。自制失败长图留在 Photos 供复核，备份保留。"
     }
   ],
   "handoffNotes": [
-    "此前 VPN 未能恢复；本轮开始和结束均为关闭状态，已告知用户可手动开启。"
+    "此前 VPN 未能恢复；本轮开始和结束均为关闭状态，已告知用户可手动开启。",
+    "当前真机验收保持原有网络、静音与专注设置，未据此复用历史网络或恢复结论。相册保留一张自制失败长图，已告知用户。"
   ],
   "currentPreparation": {
     "date": "2026-11-20",
@@ -106,6 +126,11 @@
     "screenshots": "8_current_store_simulator_RGB_PNG_1320x2868",
     "storeSubmission": "not_submitted",
     "simulatorUI": "photo_picker_import_generate_preview_alarm_editor_calendar_help_privacy_passed",
-    "deviceInstall": "installed_original_identity_and_backed_up_media_and_rules_verified"
+    "deviceInstall": "installed_original_identity_and_backed_up_media_and_rules_verified",
+    "deviceAcceptance": "partial_failed_capture_completeness_background_alarm_heard",
+    "captureSubmissionGate": "blocked_duplicate_row_023_missing_row_030",
+    "publicPages": "current_source_deployed_http200_bytes_match",
+    "distributionSigning": "blocked_paid_membership_absent",
+    "deviceReport": "device-acceptance-2026-11-20.md"
   }
 }

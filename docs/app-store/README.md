@@ -1,6 +1,6 @@
 # 卷轴 App Store 准备包
 
-用户已确认：**三功能完整版、免费、中国大陆、支持邮箱 limingjian.yy@gmail.com、版权 2026 李明健**。账号注册暂缓。当前分支完成本地准备，不表示已签名分发、备案、上传或获批。
+用户已确认三功能完整版、免费、中国大陆、支持邮箱 limingjian.yy@gmail.com、版权 2026 李明健。当前尚无付费 Apple Developer Program 会员和 APP 备案号。材料已准备，滚动截图完整性失败仍阻断提交。
 
 | 材料 | 路径 | 使用方式 |
 | --- | --- | --- |
@@ -11,16 +11,16 @@
 | 隐私问卷答案 | [privacy-answers.md](privacy-answers.md) | 已核对源码与托管政策；给出逐项答案及最终接入商需复核的日志边界 |
 | 北京备案准备 | [filing-preparation.md](filing-preparation.md) | 个人主体、当前域名缺口、可直接使用的服务说明和静态文件迁移顺序 |
 | 验收 | [acceptance.md](acceptance.md) | 区分本地验证、模拟器和真机结果 |
-| 本轮真机记录 | [device-acceptance-2026-10-27.md](device-acceptance-2026-10-27.md) | 记录修复版成品、相册读回、响铃、蜂窝与异常恢复结果 |
-| 网站页面 | [介绍](https://lmjian.github.io/apps/scrollstitch/)、[支持](https://lmjian.github.io/apps/scrollstitch/support.html)、[隐私](https://lmjian.github.io/apps/scrollstitch/privacy.html) | 有历史部署记录，当前更新待部署回读。无 JS、分析或外部字体，源文件保存在 site/ |
+| 本轮真机记录 | [device-acceptance-2026-11-20.md](device-acceptance-2026-11-20.md) | 当前版本后台响铃通过，滚动长图重复及缺行，记录清理状态 |
+| 网站页面 | [介绍](https://lmjian.github.io/apps/scrollstitch/)、[支持](https://lmjian.github.io/apps/scrollstitch/support.html)、[隐私](https://lmjian.github.io/apps/scrollstitch/privacy.html) | 当前更新已部署，三个 URL HTTP 200 且正文匹配。无 JS、分析或外部字体，源文件保存在 site/ |
 | 截图交付 | [screenshots.md](screenshots.md) | 本轮准备 8 张 1320×2868 RGB 原始模拟器截图，使用自制素材。旧截图保留历史来源 |
 | 剩余状态 | [release-status.json](release-status.json) | 未完成事项保持 pending，不使用虚构的备案号/审核回执 |
 
 ## 2026-11-20 更新
 
-当前材料沿用免费、中国大陆、iPhone / iOS 27+、1.0.0（1）。已更新商品描述和审核导航，补充当前 Store 界面的 8 张原始大屏截图。新截图通过真实照片选择器导入三张自制图片并生成拼图，覆盖拼图、闹钟、年度安排及 App 信息。滚动截图的模拟器限制页已排除，当前真机截图和完整系统行为仍待验收。
+当前材料沿用免费、中国大陆、iPhone / iOS 27+、1.0.0（1）。已更新商品描述和审核导航，补充当前 Store 界面的 8 张原始大屏截图。新截图通过真实照片选择器导入三张自制图片并生成拼图，覆盖拼图、闹钟、年度安排及 App 信息。滚动截图的模拟器限制页已排除。
 
-当前交接顺序见 [提交清单](submission-checklist.md)。站点有历史发布记录，本轮公开隐私页读取超时，当前 `site/` 改动仍需部署和回读核对。下面的网站部署结果及 2026-10-27 验收记录保留其历史来源。
+业务源码 `6256d89` 已推送。真机实际保存的长图存在 ROW 023 重复和 ROW 030 缺失，内容完整性验收失败。当前后台测试闹钟实际响铃，用户确认听到，测试规则已删除，临时工具已卸载。当前交接顺序见 [提交清单](submission-checklist.md)，历史验收仍按原日期和构建记录。
 
 ## 本地检查与正式候选包
 
@@ -41,7 +41,7 @@ python3 scripts/check_release.py --mode local --app .build/StoreArchive.xcarchiv
 
 页面源由 `Resources/Store/ProductInfo.json`、商店 metadata 及 `scripts/prepare_store_site.py` 生成。修改后重新生成并检查，避免 App 内和网页隐私说明不一致。
 
-页面已发布到现有 GitHub Pages 博客的 `apps/scrollstitch/`，仅新增本目录对应的三份 HTML，未修改博客布局、导航、文章、脚本或年度 JSON 接口。[部署记录](https://github.com/LMJian/LMJian.github.io/actions/runs/40362639245)对应提交 `c19a725`。三个公开 URL 均返回 200，正文与本地生成文件逐字节一致；两份 ProductInfo 已接入支持与隐私网址，同时保留完整离线说明和邮件支持。
+页面发布到现有 GitHub Pages 博客的 `apps/scrollstitch/`。本轮仅更新隐私和支持 HTML，部署提交为 `e114bd8`。三个公开 URL 均返回 200，正文与当前本地生成文件逐字节一致。两份 ProductInfo 已接入支持与隐私网址，同时保留完整离线说明和邮件支持。[当前部署记录](https://github.com/LMJian/LMJian.github.io/actions/runs/44683479856)
 
 今后更新页面仍需先部署、核对公开内容，再更新 App 所承诺的链接或政策版本。当前网络验证不等于已验证中国大陆所有运营商的可达性。
 
