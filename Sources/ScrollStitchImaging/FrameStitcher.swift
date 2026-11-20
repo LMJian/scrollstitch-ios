@@ -725,7 +725,10 @@ final class FrameStitcher {
                 var reference = positioned[0]
                 if anchorLocal > 0 {
                     for local in stride(from: anchorLocal - 1, through: 0, by: -1) {
-                        guard let shift = try displacement(from: reference.index, to: indices[local]) else { break }
+                        // Skip a transient frame just as the forward pass does.
+                        // Keep the last verified reference so earlier opening
+                        // content can still match across the interruption.
+                        guard let shift = try displacement(from: reference.index, to: indices[local]) else { continue }
                         reference = PositionedFrame(index: indices[local], offset: reference.offset + shift)
                         positioned.append(reference)
                     }

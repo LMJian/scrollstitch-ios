@@ -113,6 +113,17 @@ final class CapturePipelineTests: XCTestCase {
         let rasters=try outputs.map {try FrameRaster(image:$0).rgba}
         XCTAssertEqual(rasters[0],rasters[1]);XCTAssertEqual(rasters[0],rasters[2])
     }
+    func testOpeningContentSurvivesAnUnmatchableTransientFrame() async throws {
+        let clean = try record([[0, 160, 320, 480]])
+        let transient = try record([[0, 10_000, 160, 320, 480]])
+        let cleanSet = try await run(clean)
+        let transientSet = try await run(transient)
+        XCTAssertEqual(transientSet.status, .complete)
+        let expected = try output(cleanSet, store: clean.0)
+        let actual = try output(transientSet, store: transient.0)
+        XCTAssertEqual(actual.height, 1072)
+        XCTAssertTrue(try FrameRaster(image: actual).rgba == FrameRaster(image: expected).rgba, "Opening pixels must match the complete source journey")
+    }
     func testExplicitPagesRemainOrderedEvenWhenIdentical() async throws {
         let single=try record([[0,160,320]])
         let twice=try record([[0,160,320],[0,160,320]])
