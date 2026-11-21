@@ -12,7 +12,7 @@
 
 2026-11-20 用户明确产品定位为纯单机工具，无自建后端。当前截图、拼图和闹钟处理均在本机完成，源码另有从 GitHub Pages 下载年度安排 JSON 的功能，入口见 `Sources/ScrollStitchCore/WorkdayHolidayStore.swift` 与 `App/WorkdayAlarmService.swift`。当前实现仍包含该联网功能。
 
-Apple 公开说明为部分 App 需要 ICP 备案信息，不能把云服务商受理备案所需的域名和服务器条件直接视为卷轴必须采购的前提。当前状态为备案适用性待核实。已通过 Apple 官方分发支持表单提交本地工具加年度 JSON 下载的咨询，并取得官方案例回执，等待回复。发送原文及案例编号仅私有保存，之后按需要咨询北京市通信管理局。说明现有实现与联网用途，不先调整产品功能。GitHub Pages 继续作为现有支持和隐私说明页。
+Apple 公开说明为部分 App 需要 ICP 备案信息，不能把云服务商受理备案所需的域名和服务器条件直接视为卷轴必须采购的前提。当前状态为备案适用性待核实。已通过 Apple 官方分发支持表单提交本地工具加年度 JSON 下载的咨询，并取得官方案例回执。2026-11-21 在同一案例补充正式 Apple ID、Bundle ID 及 1.0.0（1）已提交审核的状态，官方确认收到，适用性结论仍待回复。发送原文及案例编号仅私有保存，之后按需要咨询北京市通信管理局。说明现有实现与联网用途，不先调整产品功能。GitHub Pages 继续作为现有支持和隐私说明页。
 
 此前直接建议购买域名和云资源的顺序已撤回。购买、迁移静态资源及删除联网更新功能均需用户另行决定。[Apple 中国大陆发行说明](https://developer.apple.com/help/app-store-connect/reference/app-information/app-information/)。
 

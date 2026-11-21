@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "ready_for_review_draft_not_submitted",
+  "status": "submitted_waiting_for_review",
   "edition": "appStore",
   "version": "1.0.0",
   "build": "1",
