@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "prepared_not_submitted",
+  "status": "ready_for_review_draft_not_submitted",
   "edition": "appStore",
   "version": "1.0.0",
   "build": "1",
@@ -30,14 +30,14 @@
     "marketing": "https://lmjian.github.io/apps/scrollstitch/"
   },
   "publicURLStatus": "published_and_verified",
-  "appNameAvailability": "requires_app_store_connect",
+  "appNameAvailability": "registered_verified",
   "reviewContact": {
     "name": "李明健",
     "email": "limingjian.yy@gmail.com",
     "phone": null
   },
-  "ageRatingStatus": "questionnaire_prepared_apple_rating_pending",
-  "privacyLabelStatus": "prepared_for_current_github_hosting_not_submitted",
+  "ageRatingStatus": "questionnaire_saved_4plus",
+  "privacyLabelStatus": "published_current_github_hosting",
   "mainlandFilingStatus": "applicability_pending",
   "iconRightsStatus": "commercial_use_confirmed_by_owner",
   "reviewPhoneStatus": "provided_privately"

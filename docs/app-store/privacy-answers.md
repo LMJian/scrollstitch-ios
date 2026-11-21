@@ -1,6 +1,6 @@
 # App Store 隐私问卷准备稿
 
-核对日期为 2026-11-20。适用于当前三功能 Store 候选包和 GitHub Pages 年度下载入口。已复核源码与公开托管政策，逐项答案可用于当前托管方案的后台填报，尚未在 App Store Connect 提交。托管方案变化时复核日志实践。
+核对日期为 2026-11-21。适用于当前三功能 Store 候选包和 GitHub Pages 年度下载入口。已复核源码与公开托管政策，逐项答案已在 App Store Connect 填入，经用户授权发布并读回发布状态。托管方案变化时复核日志实践。
 
 ## 已核定的代码行为
 
@@ -20,7 +20,7 @@
 | Photos or Videos / Audio / Contacts / Health / Purchases 等 | 不因本机处理而勾选收集 | 当前 App 不上传这些内容；不把 Apple 的照片同步当作开发者的收集 |
 | Device ID、Coarse Location、Other Diagnostic Data | 暂不仅因存在 IP 就自动勾选 | 只有实际用于设备识别、位置推断或技术诊断时才映射到相应类型；见下方需复核项 |
 
-Apple 按实际收集与用途判断类型，安全用途也可能需要披露；本机处理和隐私清单不等于商店问卷答案。以上分类按当前实现准备，最终由提交人确认。[Apple 填报规则](https://developer.apple.com/app-store/app-privacy-details/)。
+Apple 按实际收集与用途判断类型，安全用途也可能需要披露；本机处理和隐私清单不等于商店问卷答案。以上分类已由提交人确认发布。GitHub 安全日志归入其他数据类型、保守关联用户仍属于本项目填报判断。[Apple 填报规则](https://developer.apple.com/app-store/app-privacy-details/)。
 
 ## 托管日志的确定事实与剩余边界
 

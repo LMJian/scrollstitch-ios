@@ -3,9 +3,12 @@ import copy
 import importlib.util
 import json
 from pathlib import Path
+import plistlib
 import shutil
+import subprocess
 import tempfile
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[2]
 spec = importlib.util.spec_from_file_location('release_check', ROOT / 'scripts/check_release.py')
@@ -13,6 +16,54 @@ release = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(release)
 
 class ReleaseChecksTests(unittest.TestCase):
+    def signing_bundle(self, directory):
+        app = Path(directory) / 'ScrollStitchStore.app'
+        extension = app / 'PlugIns/ScrollControls.appex'
+        signatures = {}
+        for target, bundle_id in [(app, 'dev.example.app'), (extension, 'dev.example.app.controls')]:
+            target.mkdir(parents=True, exist_ok=True)
+            info = {'CFBundleIdentifier': bundle_id, 'ScrollStitchAppGroup': 'group.dev.example'}
+            (target / 'Info.plist').write_bytes(plistlib.dumps(info))
+            signature = {'application-identifier': 'TEAM123456.' + bundle_id,
+                         'com.apple.developer.team-identifier': 'TEAM123456',
+                         'com.apple.security.application-groups': ['group.dev.example'],
+                         'get-task-allow': False}
+            signatures[target.name] = signature
+            profile = {'TeamIdentifier': ['TEAM123456'], 'Entitlements': copy.deepcopy(signature)}
+            (target / 'embedded.mobileprovision').write_bytes(plistlib.dumps(profile))
+
+        def run(command, **kwargs):
+            if command[0] == 'security':
+                output = Path(command[-1]).read_bytes()
+            elif '--verify' in command:
+                output = b''
+            else:
+                output = plistlib.dumps(signatures[Path(command[-1]).name])
+            return subprocess.CompletedProcess(command, 0, stdout=output, stderr=b'')
+
+        return app, signatures, run
+
+    def testDistributionRejectsMissingSignedGroupEvenWhenProfileAllowsIt(self):
+        for name in ['ScrollStitchStore.app', 'ScrollControls.appex']:
+            with self.subTest(target=name), tempfile.TemporaryDirectory() as directory:
+                app, signatures, run = self.signing_bundle(directory)
+                signatures[name].pop('com.apple.security.application-groups')
+                with patch.object(release.subprocess, 'run', side_effect=run):
+                    with self.assertRaisesRegex(ValueError, 'signed App Group mismatch'):
+                        release.distribution_signing_check(app)
+
+    def testDistributionRequiresMatchingSignatureAndProfileGroup(self):
+        with tempfile.TemporaryDirectory() as directory:
+            app, signatures, run = self.signing_bundle(directory)
+            with patch.object(release.subprocess, 'run', side_effect=run):
+                self.assertEqual(release.distribution_signing_check(app)['signed_targets'], 2)
+                profile_path = app / 'PlugIns/ScrollControls.appex/embedded.mobileprovision'
+                profile = plistlib.loads(profile_path.read_bytes())
+                profile['Entitlements']['com.apple.security.application-groups'] = ['group.other']
+                profile_path.write_bytes(plistlib.dumps(profile))
+                with self.assertRaisesRegex(ValueError, 'profile does not authorize App Group'):
+                    release.distribution_signing_check(app)
+
     def resource_tree(self, destination):
         for folder in ('App', 'Sources', 'Shared', 'Controls', 'Resources', 'ScrollStitch.xcodeproj'):
             shutil.copytree(ROOT / folder, destination / folder, ignore=shutil.ignore_patterns('xcuserdata'))

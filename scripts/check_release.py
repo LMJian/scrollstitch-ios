@@ -195,6 +195,40 @@ def local_check(app, root=ROOT):
             'bundle_id': app_info['CFBundleIdentifier'], 'boundary': 'unsigned local archive structure; no distribution entitlement or UI/runtime claim'}
 
 
+def distribution_signing_check(app):
+    app = Path(app)
+    subprocess.run(['codesign', '--verify', '--deep', '--strict', str(app)], check=True, capture_output=True)
+    group = read_plist(app / 'Info.plist')['ScrollStitchAppGroup']
+    targets = [app] + sorted((app / 'PlugIns').glob('*.appex'))
+    require(len(targets) == 2, 'distribution requires one main app and one control extension')
+    teams = set()
+    for target in targets:
+        info = read_plist(target / 'Info.plist')
+        signed = plistlib.loads(subprocess.run(
+            ['codesign', '-d', '--entitlements', ':-', str(target)], check=True, capture_output=True).stdout)
+        profile = plistlib.loads(subprocess.run(
+            ['security', 'cms', '-D', '-i', str(target / 'embedded.mobileprovision')],
+            check=True, capture_output=True).stdout)
+        allowed = profile.get('Entitlements', {})
+        team = signed.get('com.apple.developer.team-identifier')
+        require(team and profile.get('TeamIdentifier') == [team], f'{target.name}: signing team mismatch')
+        require(info.get('ScrollStitchAppGroup') == group, f'{target.name}: runtime App Group mismatch')
+        require(signed.get('com.apple.security.application-groups') == [group],
+                f'{target.name}: signed App Group mismatch')
+        require(group in allowed.get('com.apple.security.application-groups', []),
+                f'{target.name}: profile does not authorize App Group')
+        application_id = team + '.' + info['CFBundleIdentifier']
+        require(signed.get('application-identifier') == allowed.get('application-identifier') == application_id,
+                f'{target.name}: application identifier mismatch')
+        require('ProvisionedDevices' not in profile and not profile.get('ProvisionsAllDevices'),
+                f'{target.name}: not an App Store provisioning profile')
+        require(not signed.get('get-task-allow') and not allowed.get('get-task-allow'),
+                f'{target.name}: distribution debugging enabled')
+        teams.add(team)
+    require(len(teams) == 1, 'main app and control extension use different signing teams')
+    return {'distribution_signing': 'verified', 'signed_targets': len(targets)}
+
+
 DECISIONS = ('product_scope', 'quality_evidence', 'distribution_account', 'signing', 'identity_name',
              'languages_regions_pricing', 'support_channel', 'store_copy', 'screenshots', 'icon_review',
              'age_rating', 'export_compliance', 'app_privacy', 'upload_approval')
@@ -241,6 +275,7 @@ def main():
             require(args.app is not None, '--app is required')
             result = local_check(args.app)
         if args.mode == 'distribution':
+            result.update(distribution_signing_check(args.app))
             require(args.decisions is not None, '--decisions is required')
             decisions = json.loads(args.decisions.read_text())
             product = json.loads((args.app / 'ProductInfo.json').read_text())

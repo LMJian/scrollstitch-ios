@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "asOf": "2026-11-20",
+  "asOf": "2026-11-21",
   "scope": "current Store preparation with build-specific acceptance; historical results retained separately",
   "decisions": {
     "edition": "full",
@@ -10,30 +10,25 @@
     ],
     "supportEmail": "limingjian.yy@gmail.com",
     "copyright": "2026 李明健",
-    "gui": "本轮授权模拟器截图、真机自制素材验收及临时 XCTest；手机自动化已结束。",
+    "gui": "本轮授权 Apple 官方网页检查、上架草稿与隐私声明发布；设备操作沿用已确认的验收边界。",
     "captureWorkflow": "目标内容起点 → 控制中心开始 → 系统确认全屏共享 → 滚动 → 灵动岛完成 → 自动保存到照片 → 相册查看",
     "deviceValidation": "用户确认上述主流程使用正常，要求停止其他结束路径的适配与反复真机测试。后续具体缺陷先在 Mac 用留存输入复现和回归。"
   },
   "pending": [
-    {
-      "id": "apple-account",
-      "status": "payment_confirmed_access_not_enabled",
-      "reason": "用户确认 Apple Developer Program 会员费用已付款成功且有订单收据。已登录官网核对，账户页仍显示购买会员资格和购买处理可能最多需48小时的提示；尚未确认会员生效。App Store Connect 官方页面明确提示账户尚未启用 iTunes Connect，当前无法创建应用记录或填写草稿。正式签名及上传仍待权限生效。"
-    },
     {
       "id": "mainland-filing",
       "status": "applicability_pending",
       "reason": "用户明确定位为纯单机工具，无自建后端。当前实现包含 GitHub Pages 年度 JSON 下载。先向 Apple 核实这一实际功能组合的备案要求，必要时咨询北京市通信管理局，再决定是否办理。域名及云资源采购、静态文件迁移均待适用性确认及用户决定。当前尚未申报或取得备案号。"
     },
     {
-      "id": "privacy-label",
-      "status": "ready_for_entry_current_hosting",
-      "reason": "已按当前 GitHub Pages 托管及自动/手动年度 JSON 下载定稿准备答案，保留安全日志与主动客服反馈的保守披露判断。尚未在 App Store Connect 填入或获 Apple 接受，托管方案变化时复核。"
-    },
-    {
       "id": "apple-filing-consultation",
       "status": "submitted_awaiting_reply",
       "reason": "已通过已登录的 Apple 官方支持页面，在分发主题提交本地工具加 GitHub 年度 JSON 下载的备案适用性咨询。官方显示感谢联系、已分配案例ID并将审阅回复。回执及发送原文仅私有保存，尚未取得适用性结论。"
+    },
+    {
+      "id": "app-review-submission",
+      "status": "review_draft_ready_not_submitted",
+      "reason": "Apple 已接受 1.0.0（1）加入审核草稿并显示可供审核。中国大陆备案适用性咨询仍待结论，正式提交与审核后手动发布待后续处理。"
     }
   ],
   "completed": [
@@ -125,29 +120,84 @@
       "id": "primary-capture-workflow",
       "status": "confirmed_by_owner",
       "verification": "用户明确确认自己使用控制中心开始、灵动岛停止的流程没有问题。此处记录用户实际使用确认，未声称本轮代理已重新执行该主流程的完整真机自动化。"
+    },
+    {
+      "id": "paid-membership",
+      "status": "enabled_verified",
+      "verification": "2026-11-21 Apple Developer 官方账户与 App Store Connect 权限均已验证有效。"
+    },
+    {
+      "id": "store-app-record",
+      "status": "created_verified",
+      "verification": "卷轴，Apple ID 6837656155，SKU scrollstitch-ios，简体中文，iOS 1.0.0（1）。"
+    },
+    {
+      "id": "store-distribution-signing",
+      "status": "signed_export_verified",
+      "appBuildCommit": "1b44b8bf0e794ecf6864b6a9bbee9d53fd5200a9",
+      "verification": "Apple 分发签名与 App Store 描述文件已导出，主 App 和控制扩展实际签名均带批准的新共享组，包签名完整性通过。原开发配置默认身份保留，尚未覆盖安装手机。"
+    },
+    {
+      "id": "store-build-upload",
+      "status": "processed_selected_in_review_draft",
+      "appBuildCommit": "1b44b8bf0e794ecf6864b6a9bbee9d53fd5200a9",
+      "verification": "Apple 上传工具报告成功，后台读回 1.0.0（1）可选，已保存到审核草稿并重载确认。"
+    },
+    {
+      "id": "store-metadata",
+      "status": "saved_verified",
+      "verification": "名称、副标题、工具与摄影录像分类、描述、关键词、公开链接、中英审核说明及私有审核联系人已保存；无需登录，手动发布。"
+    },
+    {
+      "id": "store-screenshot-upload",
+      "status": "uploaded_verified",
+      "verification": "8 张原始 1320×2868 PNG 上传后重载读回；后台明确为中等屏幕复用现有大屏素材。"
+    },
+    {
+      "id": "store-age-and-compliance",
+      "status": "saved_verified",
+      "verification": "分级问卷计算为 4+。大陆 AIGC 与安全评估适用性均按实际功能填否，两项声明显示有效；备案结论继续待核实。"
+    },
+    {
+      "id": "store-pricing-and-territory",
+      "status": "saved_verified",
+      "verification": "免费，基准中国大陆 CNY；供应范围 1 个为中国大陆，174 个未供应。Mac 和 Vision Pro 提供选项均关闭。"
+    },
+    {
+      "id": "store-privacy-label",
+      "status": "published_verified",
+      "verification": "用户授权后发布，后台显示发布人和时间；电子邮件地址、客户支持和其他数据用于 App 功能、关联用户、不用于跟踪。隐私政策 URL 由用户手动填写后回读核对。"
     }
   ],
   "handoffNotes": [
     "此前 VPN 未能恢复；本轮开始和结束均为关闭状态，已告知用户可手动开启。",
     "当前真机验收保持原有网络、静音与专注设置，未据此复用历史网络或恢复结论。相册保留一张自制失败长图，已告知用户。",
-    "2026-11-20 用户明确限定主流程，已写入 AGENTS.md。禁止擅自扩展结束路径、因上架重复要求已确认测试，或自行延长手机占用。"
+    "2026-11-20 用户明确限定主流程，已写入 AGENTS.md。禁止擅自扩展结束路径、因上架重复要求已确认测试，或自行延长手机占用。",
+    "2026-11-21 用户批准首次上架使用新共享组和控制扩展标识。正式上传仅使用新签名身份，手机覆盖安装前另行备份并确认迁移。"
   ],
   "currentPreparation": {
-    "date": "2026-11-20",
+    "date": "2026-11-21",
     "version": "1.0.0",
     "build": "1",
     "historicalAcceptanceAppliesToCurrentBuild": false,
     "screenshots": "8_current_store_simulator_RGB_PNG_1320x2868",
-    "storeSubmission": "not_submitted",
+    "storeSubmission": "ready_for_review_draft_not_submitted",
     "simulatorUI": "photo_picker_import_generate_preview_alarm_editor_calendar_help_privacy_passed",
     "deviceInstall": "installed_original_identity_and_backed_up_media_and_rules_verified",
     "deviceAcceptance": "owner_primary_workflow_confirmation_recorded_agent_alternate_route_excluded",
     "captureSubmissionGate": "local_regressions_passed_primary_workflow_confirmed_by_owner",
     "publicPages": "current_source_deployed_http200_bytes_match",
-    "distributionSigning": "blocked_enrollment_under_review",
+    "distributionSigning": "apple_distribution_signed_shared_group_verified",
     "deviceReport": "device-acceptance-2026-11-20.md",
     "localCaptureRegression": "83_lossy_native_frames_36_rows_geometry_and_body_and_label_pixels_passed",
-    "primaryWorkflow": "control_center_start_dynamic_island_finish"
+    "primaryWorkflow": "control_center_start_dynamic_island_finish",
+    "uploadedBuildCommit": "1b44b8bf0e794ecf6864b6a9bbee9d53fd5200a9",
+    "uploadedSourceDigest": "7726650514e0072713a8044137a354928ebf51161c6ea65be00e409abceb9bb5",
+    "buildProcessing": "complete",
+    "appStoreId": "6837656155",
+    "privacyLabel": "published",
+    "screenshotsUploaded": 8,
+    "phoneMigration": "backup_and_owner_confirmation_required_before_future_update"
   },
   "excludedByOwner": [
     {

@@ -1,6 +1,6 @@
 # App Review 说明
 
-这是待填写到 App Store Connect 的审核说明。审核电话已私有保存，提交时补入 App Store Connect。当前支持与隐私页面已部署并回读核对。Apple Developer Program 注册申请正在审核，正式上传及 Apple 审核待完成。
+中英说明已填入 App Store Connect 审核草稿，私有审核电话使用开发者账户登记联系方式。当前支持与隐私页面已部署并回读核对。付费会员已启用，正式构建已上传并处理完成，Apple 审核尚未提交。
 
 ## 中文说明
 
