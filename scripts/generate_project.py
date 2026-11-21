@@ -106,7 +106,7 @@ project_configs = configurations('project', {'CLANG_ENABLE_MODULES':'YES', 'SDKR
 for name, folder, product, bundle_suffix in (
     ('ScrollStitch', 'App', app_product, 'app'),
     ('ScrollStitchStore', 'App', store_product, 'app'),
-    ('ScrollControls','Controls',controls_product,'app.controls'),
+    ('ScrollControls','Controls',controls_product,'$(SCROLLSTITCH_CONTROLS_BUNDLE_SUFFIX)'),
 ):
     files = []
     for rel, ref in source_refs.items():

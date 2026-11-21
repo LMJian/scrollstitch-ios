@@ -1175,7 +1175,7 @@
 "isa" = "XCBuildConfiguration";
 "buildSettings" = {
 "PRODUCT_NAME" = "ScrollControls";
-"PRODUCT_BUNDLE_IDENTIFIER" = "$(SCROLLSTITCH_BUNDLE_PREFIX).app.controls";
+"PRODUCT_BUNDLE_IDENTIFIER" = "$(SCROLLSTITCH_BUNDLE_PREFIX).$(SCROLLSTITCH_CONTROLS_BUNDLE_SUFFIX)";
 "INFOPLIST_FILE" = "Controls/Info.plist";
 "CODE_SIGN_ENTITLEMENTS" = "Controls/ScrollStitch.entitlements";
 "SUPPORTED_PLATFORMS" = "iphoneos iphonesimulator";
@@ -1192,7 +1192,7 @@
 "isa" = "XCBuildConfiguration";
 "buildSettings" = {
 "PRODUCT_NAME" = "ScrollControls";
-"PRODUCT_BUNDLE_IDENTIFIER" = "$(SCROLLSTITCH_BUNDLE_PREFIX).app.controls";
+"PRODUCT_BUNDLE_IDENTIFIER" = "$(SCROLLSTITCH_BUNDLE_PREFIX).$(SCROLLSTITCH_CONTROLS_BUNDLE_SUFFIX)";
 "INFOPLIST_FILE" = "Controls/Info.plist";
 "CODE_SIGN_ENTITLEMENTS" = "Controls/ScrollStitch.entitlements";
 "SUPPORTED_PLATFORMS" = "iphoneos iphonesimulator";
@@ -1209,7 +1209,7 @@
 "isa" = "XCBuildConfiguration";
 "buildSettings" = {
 "PRODUCT_NAME" = "ScrollControls";
-"PRODUCT_BUNDLE_IDENTIFIER" = "$(SCROLLSTITCH_BUNDLE_PREFIX).app.controls";
+"PRODUCT_BUNDLE_IDENTIFIER" = "$(SCROLLSTITCH_BUNDLE_PREFIX).$(SCROLLSTITCH_CONTROLS_BUNDLE_SUFFIX)";
 "INFOPLIST_FILE" = "Controls/Info.plist";
 "CODE_SIGN_ENTITLEMENTS" = "Controls/ScrollStitch.entitlements";
 "SUPPORTED_PLATFORMS" = "iphoneos iphonesimulator";

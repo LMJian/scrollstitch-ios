@@ -28,6 +28,8 @@
 
 ## 本地检查与正式候选包
 
+开发版控制扩展的默认后缀为 `app.controls`。正式发行可通过被 Git 忽略的独立 xcconfig 覆盖 `DEVELOPMENT_TEAM`、`SCROLLSTITCH_APP_GROUP` 和 `SCROLLSTITCH_CONTROLS_BUNDLE_SUFFIX`，并用 `xcodebuild -xcconfig` 传入。主 App 与控制扩展使用相同的新共享组，主 App 的 Bundle ID 单独核对。用户已同意首次上架版使用新共享组及控制扩展标识，后续手机更新前先备份并确认数据迁移。
+
 ```sh
 python3 scripts/generate_project.py --check
 python3 scripts/prepare_store_site.py --check
