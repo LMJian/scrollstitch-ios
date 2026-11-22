@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "asOf": "2026-11-21",
+  "asOf": "2026-11-22",
   "scope": "current Store preparation with build-specific acceptance; historical results retained separately",
   "decisions": {
     "edition": "full",
@@ -17,18 +17,13 @@
   "pending": [
     {
       "id": "mainland-filing",
-      "status": "applicability_pending",
-      "reason": "用户明确定位为纯单机工具，无自建后端。当前实现包含 GitHub Pages 年度 JSON 下载。先向 Apple 核实这一实际功能组合的备案要求，必要时咨询北京市通信管理局，再决定是否办理。域名及云资源采购、静态文件迁移均待适用性确认及用户决定。当前尚未申报或取得备案号。"
+      "status": "required_by_app_store_connect",
+      "reason": "2026-11-22，App Review 已批准且用户授权完成手动发布。版本状态为可分发，但中国大陆供应明确显示缺少 ICP 备案号，查看详情提示必须提供 ICP 备案号，有效供应地区为 0。当前大陆下载被该字段阻挡。需取得并核验实际备案号，或由 Apple 对本应用的适用性和限制给出正式处理结论。"
     },
     {
       "id": "apple-filing-consultation",
       "status": "submitted_awaiting_reply",
-      "reason": "原备案适用性咨询仍待回复。2026-11-21 已在同一官方案例补充正式 Apple ID、Bundle ID、当前功能和已提交审核状态，官方确认收到并将审阅回复。回执仅私有保存。"
-    },
-    {
-      "id": "app-review",
-      "status": "waiting_for_review",
-      "reason": "用户授权正式提交后，Apple 已受理 1.0.0（1）。后台提交记录显示北京时间 2026-11-21 21:24 等待审核，审核结果及后续反馈待处理。"
+      "reason": "2026-11-22 已在原官方案例补充已批准、已执行发布、可分发及中国大陆缺少 ICP 备案号导致供应为 0 的实际结果，并请求实际办理路径或适用性核查。官方确认收到并将回复，回执仅私有保存。"
     }
   ],
   "completed": [
@@ -175,6 +170,20 @@
       "build": "1",
       "submittedAt": "2026-11-21T21:24:00+08:00",
       "verification": "版本页显示正在等待审核、已提交 1 个项目；独立 App 审核记录读回版本 1.0.0（1）、提交时间和等待审核状态。备案适用性继续待答复。"
+    },
+    {
+      "id": "store-review-approved",
+      "status": "approved_verified",
+      "version": "1.0.0",
+      "build": "1",
+      "verification": "2026-11-22，独立 App Review 提交详情显示已完成审核，iOS 1.0.0（1）状态已批准，最后更新者为 Apple。"
+    },
+    {
+      "id": "store-manual-release",
+      "status": "release_accepted_mainland_blocked",
+      "version": "1.0.0",
+      "build": "1",
+      "verification": "用户单独授权正式发布后，在仅中国大陆 1 个地区的系统确认框完成发布，版本状态读回可分发。随后独立供应页读回中国大陆缺少 ICP 备案号、有效地区为 0。此记录覆盖发布请求已接受及实际地区限制。"
     }
   ],
   "handoffNotes": [
@@ -182,15 +191,16 @@
     "当前真机验收保持原有网络、静音与专注设置，未据此复用历史网络或恢复结论。相册保留一张自制失败长图，已告知用户。",
     "2026-11-20 用户明确限定主流程，已写入 AGENTS.md。禁止擅自扩展结束路径、因上架重复要求已确认测试，或自行延长手机占用。",
     "2026-11-21 用户批准首次上架使用新共享组和控制扩展标识。正式上传仅使用新签名身份，手机覆盖安装前另行备份并确认迁移。",
-    "2026-11-21 用户明确授权正式提交审核，版本 1.0.0（1）已提交。备案适用性咨询在原案例补充正式标识及提交信息，等待答复；审核通过后采用手动发布。"
+    "2026-11-21 用户明确授权正式提交审核，版本 1.0.0（1）已提交。备案适用性咨询在原案例补充正式标识及提交信息，等待答复；审核通过后采用手动发布。",
+    "2026-11-22 用户明确授权正式发布。发布已接受并读回可分发，实际中国大陆供应因缺少 ICP 备案号为 0，已向原支持案例补充此明确阻塞。"
   ],
   "currentPreparation": {
-    "date": "2026-11-21",
+    "date": "2026-11-22",
     "version": "1.0.0",
     "build": "1",
     "historicalAcceptanceAppliesToCurrentBuild": false,
     "screenshots": "8_current_store_simulator_RGB_PNG_1320x2868",
-    "storeSubmission": "submitted_waiting_for_review",
+    "storeSubmission": "released_ready_for_distribution",
     "simulatorUI": "photo_picker_import_generate_preview_alarm_editor_calendar_help_privacy_passed",
     "deviceInstall": "installed_original_identity_and_backed_up_media_and_rules_verified",
     "deviceAcceptance": "owner_primary_workflow_confirmation_recorded_agent_alternate_route_excluded",
@@ -207,7 +217,12 @@
     "privacyLabel": "published",
     "screenshotsUploaded": 8,
     "phoneMigration": "backup_and_owner_confirmation_required_before_future_update",
-    "submittedAt": "2026-11-21T21:24:00+08:00"
+    "submittedAt": "2026-11-21T21:24:00+08:00",
+    "appReview": "approved",
+    "manualRelease": "confirmed_by_app_store_connect",
+    "mainlandAvailability": "blocked_missing_icp_filing_number",
+    "effectiveTerritories": [],
+    "publicStorefront": "http404_and_lookup0_observed_after_release"
   },
   "excludedByOwner": [
     {

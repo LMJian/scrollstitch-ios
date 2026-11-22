@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "submitted_waiting_for_review",
+  "status": "release_accepted_mainland_blocked_missing_icp",
   "edition": "appStore",
   "version": "1.0.0",
   "build": "1",
@@ -38,7 +38,7 @@
   },
   "ageRatingStatus": "questionnaire_saved_4plus",
   "privacyLabelStatus": "published_current_github_hosting",
-  "mainlandFilingStatus": "applicability_pending",
+  "mainlandFilingStatus": "blocked_missing_icp_in_app_store_connect",
   "iconRightsStatus": "commercial_use_confirmed_by_owner",
   "reviewPhoneStatus": "provided_privately"
 }
